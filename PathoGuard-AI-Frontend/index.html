@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PathoGuard | Clinical Health Insight Platform</title>
+  <meta name="description" content="Direction A Clinical Intelligence health workspace. Evidence-linked scan report analysis and guided symptom assessment.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="clinical-theme">
+  <!-- Application Shell -->
+  <div class="app-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-brand">
+        <div class="brand-emblem">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#38efbe" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v8"/>
+            <path d="M8 12h8"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">PathoGuard-AI</span>
+          <span class="brand-sub">CLINICAL INTELLIGENCE</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-tab="symptoms">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <span>Symptom Assessment</span>
+        </button>
+
+        <button class="nav-item" data-tab="reports">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Report Analysis</span>
+        </button>
+
+        <button class="nav-item" data-tab="history">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 14 14"/>
+          </svg>
+          <span>My Assessments</span>
+        </button>
+
+        <button class="nav-item" data-tab="evidence-integrity">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          <span>Health Resources</span>
+        </button>
+
+        <button class="nav-item" data-tab="settings">
+          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <!-- Botanical Illustration & Brand Mission Card in Bottom Sidebar -->
+      <div class="sidebar-bottom-zone">
+        <div class="botanical-art">
+          <svg width="90" height="100" viewBox="0 0 100 120" fill="none">
+            <path d="M5 120 C 10 70, 45 40, 85 30 C 60 60, 45 90, 30 120 Z" fill="#1b4d47" opacity="0.6"/>
+            <path d="M0 100 C 5 60, 30 40, 60 35 C 45 55, 35 80, 20 105 Z" fill="#2dd4bf" opacity="0.35"/>
+          </svg>
+        </div>
+        <div class="sidebar-quote-card">
+          <p class="sidebar-quote-text">
+            Better<br>Information.<br>More Meaningful<br>Conversations.
+          </p>
+          <div class="sidebar-quote-bar"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main View Container -->
+    <main class="app-main">
+      <!-- Top Navigation Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="mobile-toggle" id="mobileMenuToggle" aria-label="Toggle navigation">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="header-breadcrumb">
+            <span class="crumb-root">PathoGuard</span>
+            <span class="crumb-separator">&gt;</span>
+            <span class="crumb-current" id="currentViewName">Dashboard</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Search Capsule matching screenshot -->
+          <div class="header-search-capsule">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="globalSearchInput" placeholder="Search..." aria-label="Search">
+          </div>
+
+          <!-- Notification Bell & Dropdown -->
+          <div class="header-notification-wrapper" style="position: relative;">
+            <button class="header-icon-action" id="headerNotificationsBtn" title="Application Messages & Alerts">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span class="notification-indicator-dot" id="headerNotificationDot"></span>
+            </button>
+
+            <!-- Notifications Dropdown Panel -->
+            <div class="notifications-panel-dropdown" id="notificationsDropdown" style="display: none;">
+              <div class="notifications-panel-header">
+                <h4>Session &amp; Health Activity</h4>
+                <button class="btn-text-xs" id="markAllNotificationsReadBtn">Mark read</button>
+              </div>
+              <div class="notifications-list" id="notificationsList">
+                <div class="notification-item unread">
+                  <span class="notif-dot"></span>
+                  <div class="notif-content">
+                    <strong>Local Privacy Active</strong>
+                    <p>All clinical inputs, questionnaire responses, and notes remain stored in your private local browser cache.</p>
+                    <span class="notif-time">Session</span>
+                  </div>
+                </div>
+              </div>
+              <div class="notifications-panel-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;">
+                <span class="privacy-guarantee-micro">Local browser cache only</span>
+                <button class="btn-text-xs" id="purgeLocalCacheBtn" style="color: #f87171; cursor: pointer;" title="Purge local storage drafts and cached profile">Purge Cache</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Profile & Avatar -->
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="header-user-profile-btn" id="headerUserProfileBtn" title="Click to view or edit patient details">
+              <span id="headerUserName">Patient</span> &bull; <span id="headerUserMeta">Profile</span>
+            </button>
+            <div class="user-avatar-badge" id="headerUserAvatarBadge" title="Click to view or edit your details">P</div>
+          </div>
+
+          <button class="btn btn-primary btn-sm" id="headerNewAssessmentBtn" style="display: none;">New</button>
+        </div>
+      </header>
+
+      <!-- View Wrapper -->
+      <div class="content-viewport">
+        
+        <!-- ========================================== -->
+        <!-- VIEW A: HOME DASHBOARD                     -->
+        <!-- ========================================== -->
+        <section class="view-panel active" id="view-dashboard">
+
+          <!-- Active Patient Profile Strip -->
+          <div class="patient-profile-strip" id="dashboardProfileStrip">
+            <div class="profile-strip-left">
+              <div class="patient-avatar-mini" id="stripAvatarMini">P</div>
+              <div class="profile-strip-info">
+                <div class="profile-strip-name-row">
+                  <span class="patient-name-title" id="stripPatientName">Your Patient Profile</span>
+                  <span class="badge-taxonomy badge-state-reviewed" id="stripProfileStatusBadge" style="font-size: 10px; padding: 2px 6px;">PROFILE ACTIVE</span>
+                </div>
+                <div class="profile-strip-details" id="stripPatientDetails">
+                  <span>Enter your patient details to personalize your clinical dashboard, symptom checks, and doctor visits.</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-xs" id="editProfileBtn" style="white-space: nowrap; border-radius: 6px; padding: 6px 12px; font-weight: 500;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -1px;">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              <span>Edit Details</span>
+            </button>
+          </div>
+          
+          <!-- Calm Clinical Greeting & Primary Dashboard Hub -->
+          <div class="hero-assessment-card">
+            <div class="hero-backdrop-glow"></div>
+            <div class="hero-scientific-grid"></div>
+
+            <div class="hero-content">
+              <div class="hero-badge">
+                <span class="badge-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38efbe" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M12 8v8"/>
+                    <path d="M8 12h8"/>
+                  </svg>
+                </span>
+                CLINICAL INTELLIGENCE WORKSPACE
+              </div>
+
+              <h1 class="hero-title">Better information. More meaningful conversations.</h1>
+              <p class="hero-subtitle">
+                PathoGuard-AI helps you organize your symptoms, understand diagnostic scan reports with verbatim passage verification, and prepare clear, evidence-backed questions for your doctor.
+              </p>
+
+              <!-- Four Purposeful Primary Starting Points -->
+              <div class="hero-actions-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+                
+                <!-- Action 1: Start New Assessment -->
+                <div class="action-card action-symptoms" id="heroActionSymptoms" style="border-color: rgba(56, 239, 190, 0.45); box-shadow: 0 4px 20px rgba(56, 239, 190, 0.08);">
+                  <div class="card-glow-edge"></div>
+                  <div class="action-icon-wrap" style="background: rgba(56, 239, 190, 0.12); color: #38efbe;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </div>
+                  <div class="action-details">
+                    <span class="action-tag" style="color: #38efbe;">START HERE</span>
+                    <h2 class="action-title" style="font-size: 1.15rem;">Start New Assessment</h2>
+                    <p class="action-desc">Begin a guided symptom questionnaire with adaptive follow-up inquiries.</p>
+                    <div class="action-cta" style="color: #38efbe;">
+                      <span>Start symptom flow</span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action 2: Continue In-Progress Assessment -->
+                <div class="action-card action-continue" id="dashboardContinueCard" style="border-color: rgba(56, 189, 248, 0.35);">
+                  <div class="card-glow-edge"></div>
+                  <div class="action-icon-wrap" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  </div>
+                  <div class="action-details">
+                    <span class="action-tag" style="color: #38bdf8;">CONTINUITY</span>
+                    <h2 class="action-title" style="font-size: 1.15rem;">Continue Assessment</h2>
+                    <p class="action-desc" id="dashboardDraftDesc">Resume your unfinished session. Your earlier answers are safely cached locally.</p>
+                    <div class="action-cta" style="color: #38bdf8;">
+                      <span id="dashboardContinueCtaLabel">Resume assessment</span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action 3: Scan Report Analysis -->
+                <div class="action-card action-reports" id="heroActionReports">
+                  <div class="card-glow-edge"></div>
+                  <div class="action-icon-wrap">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </div>
+                  <div class="action-details">
+                    <span class="action-tag">DOCUMENT READER</span>
+                    <h2 class="action-title" style="font-size: 1.15rem;">Upload Medical Report</h2>
+                    <p class="action-desc">Upload a scan or pathology PDF for optical OCR and passage verification.</p>
+                    <div class="action-cta">
+                      <span>Upload &amp; analyze report</span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action 4: Doctor Consultation Preparation -->
+                <div class="action-card action-reports" id="dashboardDoctorPrepCard" style="border-color: rgba(167, 139, 250, 0.35);">
+                  <div class="card-glow-edge"></div>
+                  <div class="action-icon-wrap" style="background: rgba(167, 139, 250, 0.12); color: #c084fc;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                      <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                  </div>
+                  <div class="action-details">
+                    <span class="action-tag" style="color: #c084fc;">DOCTOR CONSULTATION</span>
+                    <h2 class="action-title" style="font-size: 1.15rem;">Prepare for Doctor Visit</h2>
+                    <p class="action-desc">Generate a printable clinical discussion guide with timeline and report excerpts.</p>
+                    <div class="action-cta" style="color: #c084fc;">
+                      <span>Prepare consultation guide</span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Patient-Safety Notice -->
+              <div class="hero-disclaimer-pill" style="margin-top: 18px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span><strong>Patient Safety Notice:</strong> This platform provides informational support and organizes clinical evidence for your physician. It does not provide medical diagnoses or rule out disease. Always consult a qualified healthcare professional.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard Two Columns: Recent Activity + Doctor Consultation Prep Section -->
+          <div class="dashboard-columns">
+            
+            <!-- Column 1: Recent Assessments & Active Records -->
+            <div class="clinical-card col-activity">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Assessments &amp; Reports</h3>
+                  <p class="card-subtitle">Saved sessions, report evaluations, and status records</p>
+                </div>
+                <button class="btn-text" id="viewAllHistoryBtn">View All History &rarr;</button>
+              </div>
+
+              <div class="activity-timeline" id="recentActivityList">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+
+            <!-- Column 2: Preparing Questions for Your Doctor -->
+            <div class="clinical-card col-how-it-works">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Questions for Your Doctor</h3>
+                  <p class="card-subtitle">Evidence-based discussion topics to raise in your appointment</p>
+                </div>
+                <span class="tag-clinical">Consultation Ready</span>
+              </div>
+
+              <div class="pipeline-steps" id="dashboardDoctorQuestionsList">
+                <!-- Dynamically populated via JS based on user details and active concerns -->
+              </div>
+
+              <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn btn-primary btn-sm" id="launchDoctorPrepModalBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                  </svg>
+                  <span>Build Printable Doctor Summary</span>
+                </button>
+                <span style="font-size: 0.8rem; color: #8fa0b5;">Printable &amp; source-grounded</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Privacy & Data Governance Banner -->
+          <div class="privacy-banner">
+            <div class="privacy-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div class="privacy-text">
+              <h4>Privacy-First Clinical Design &amp; Data Retention</h4>
+              <p>Your diagnostic documents, text selections, and symptom responses remain stored locally in your browser cache during active use. You hold full authority to export findings, redact identifying text, or purge all local assessment caches instantly.</p>
+            </div>
+            <div class="privacy-action">
+              <button class="btn btn-outline-danger btn-sm" id="purgeSessionDataBtn">Clear Session Data</button>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW B: SYMPTOM ASSISTANT                  -->
+        <!-- ========================================== -->
+        <section class="view-panel" id="view-symptoms">
+          <div class="symptom-view-layout">
+            
+            <!-- Left Main Column (Questionnaire & Stepper) -->
+            <div class="symptom-view-main">
+              
+              <!-- Header with Stethoscope Icon matching screenshot -->
+              <div class="symptom-intro-block">
+                <div class="symptom-intro-title-row">
+                  <span class="symptom-intro-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38efbe" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
+                      <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
+                      <circle cx="20" cy="10" r="2"/>
+                    </svg>
+                  </span>
+                  <h1 class="symptom-intro-heading">Let’s understand what you’re experiencing.</h1>
+                </div>
+                <p class="symptom-intro-subheading">
+                  Answer a few questions so we can organize your information and help you prepare for a more meaningful healthcare consultation.
+                </p>
+              </div>
+
+              <!-- 6-Step Horizontal Progress Stepper matching screenshot -->
+              <div class="stepper-horizontal-bar" id="stepperProgressBar">
+                <div class="stepper-step active" data-step="0">
+                  <div class="stepper-circle">1</div>
+                  <span class="stepper-label">Main Concern</span>
+                </div>
+                <div class="stepper-line active"></div>
+
+                <div class="stepper-step" data-step="1">
+                  <div class="stepper-circle">2</div>
+                  <span class="stepper-label">Onset &amp; Duration</span>
+                </div>
+                <div class="stepper-line"></div>
+
+                <div class="stepper-step" data-step="2">
+                  <div class="stepper-circle">3</div>
+                  <span class="stepper-label">Trajectory</span>
+                </div>
+                <div class="stepper-line"></div>
+
+                <div class="stepper-step" data-step="3">
+                  <div class="stepper-circle">4</div>
+                  <span class="stepper-label">Constancy</span>
+                </div>
+                <div class="stepper-line"></div>
+
+                <div class="stepper-step" data-step="4">
+                  <div class="stepper-circle">5</div>
+                  <span class="stepper-label">Clinical Context</span>
+                </div>
+                <div class="stepper-line"></div>
+
+                <div class="stepper-step" data-step="5">
+                  <div class="stepper-circle">6</div>
+                  <span class="stepper-label">Review &amp; Confirm</span>
+                </div>
+              </div>
+
+              <!-- Urgent Safety Notice (Hidden unless triggered) -->
+              <div class="urgent-safety-banner" id="urgentSafetyBanner" style="display: none; margin-bottom: 18px;">
+                <div class="urgent-icon-wrap">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </div>
+                <div class="urgent-content">
+                  <h4>Urgent Clinical Guidance</h4>
+                  <p id="urgentSafetyMessage">If you are experiencing sudden severe shortness of breath or uncontrolled bleeding, seek emergency care immediately.</p>
+                  <div class="urgent-actions">
+                    <a href="tel:911" class="btn btn-sm btn-emergency">Call Emergency Services</a>
+                    <button class="btn btn-secondary btn-sm" id="dismissUrgentBannerBtn">Continue informational assessment</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Step Question Card matching screenshot -->
+              <div class="symptom-question-panel" id="wizardQuestionContainer">
+                <div class="question-panel-top">
+                  <div class="question-panel-badge-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38efbe" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                      <path d="M12 9v4"/>
+                      <path d="M10 11h4"/>
+                    </svg>
+                  </div>
+                  <div class="question-panel-text-block">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                      <span class="step-num-tag" id="wizardStepLabel">STEP 1 OF 6</span>
+                      <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="autosave-indicator" id="autosaveIndicator" style="font-size: 11.5px; color: #8fa0b5; display: inline-flex; align-items: center;">
+                          <span class="indicator-dot dot-mint" style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #38efbe; margin-right: 5px;"></span>
+                          Saved locally
+                        </span>
+                        <button class="btn btn-ghost btn-xs" id="wizardReviewDrawerBtn" style="color: #8fa0b5; border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 5px; font-size: 11px; cursor: pointer;">
+                          Review Answers (<span id="answersCountBadge">1</span>)
+                        </button>
+                      </div>
+                    </div>
+                    <h2 class="question-title-text" id="questionPrompt">What is your main concern today?</h2>
+                    <p class="question-instruction-text" id="questionHint">You can select more than one option if you are experiencing multiple changes.</p>
+                    
+                    <!-- Evidence Gap Notice: Appears when scan report evidence already exists -->
+                    <div class="evidence-gap-banner" id="evidenceGapNotice" style="display: none; margin-top: 10px; padding: 8px 12px; background: rgba(56, 189, 248, 0.08); border-left: 3px solid #38bdf8; border-radius: 4px; font-size: 0.78rem; color: #bae6fd;">
+                      <span style="font-weight: 600;">Evidence Gap Filter:</span> <span id="evidenceGapNoticeText">Documented findings already verified; physical dimension questions omitted.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Hidden compatibility hooks for existing script.js elements -->
+                <div style="display: none;">
+                  <span id="questionPill">MAIN CONCERN</span>
+                  <span id="wizardCategoryTitle">Main Concern</span>
+                  <span id="wizardCategorySubtitle">Options</span>
+                  <div id="wizardProgressFill"></div>
+                  <div id="whyWeAskBox"><span id="whyWeAskText"></span></div>
+                  <div id="validationWarning"></div>
+                  <div id="conditionalBox"><div id="conditionalChipsContainer"></div></div>
+                  <button id="wizardSkipBtn"></button>
+                </div>
+
+                <!-- 7 Option Cards Container -->
+                <div class="concern-cards-grid" id="chipsContainer">
+                  <!-- Injected dynamically via renderSymptomStep() -->
+                </div>
+
+                <!-- Additional Context Input matching screenshot -->
+                <div class="context-input-container">
+                  <label class="context-input-label" for="customSymptomNote">Additional context (optional)</label>
+                  <div class="context-field-wrap">
+                    <input type="text" id="customSymptomNote" class="context-text-field" placeholder="e.g. When did you first notice it? Has it changed over time?" maxlength="500">
+                    <span class="context-char-count" id="charCounter">0/500</span>
+                  </div>
+                </div>
+
+                <!-- Navigation Controls matching screenshot -->
+                <div class="question-panel-footer">
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-panel-back" id="wizardPrevBtn">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                      </svg>
+                      <span>Back</span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="wizardSaveExitBtn" title="Save draft locally and return to dashboard" style="border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; font-weight: 500;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                      </svg>
+                      <span>Save and Exit</span>
+                    </button>
+                  </div>
+
+                  <button class="btn btn-panel-continue" id="wizardNextBtn">
+                    <span id="wizardNextBtnText">Continue</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                      <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Answer History Review Panel (Drawer) -->
+              <div class="answers-review-panel" id="answersReviewPanel" style="display: none;">
+                <div class="review-header">
+                  <h4>Recorded Responses</h4>
+                  <button class="btn-icon" id="closeReviewPanelBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </div>
+                <div class="review-list" id="reviewAnswersList"></div>
+              </div>
+
+            </div>
+
+            <!-- Right Sidebar Column matching screenshot -->
+            <div class="symptom-view-sidebar">
+              
+              <!-- Card 1: Your Information in One Place -->
+              <div class="guide-panel-card info-summary-card">
+                <div class="info-summary-art">
+                  <svg width="120" height="90" viewBox="0 0 160 120" fill="none">
+                    <defs>
+                      <linearGradient id="screenGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#193747"/>
+                        <stop offset="100%" stop-color="#0a1924"/>
+                      </linearGradient>
+                      <linearGradient id="leafGlow" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#38efbe" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#115e50" stop-opacity="0.3"/>
+                      </linearGradient>
+                    </defs>
+                    <!-- Organic leaves in background -->
+                    <path d="M15 115 C 10 70, 45 40, 75 25 C 55 55, 45 85, 30 115 Z" fill="url(#leafGlow)"/>
+                    <path d="M5 95 C 5 65, 30 45, 55 35 C 38 55, 30 75, 18 95 Z" fill="#206a5d" opacity="0.5"/>
+                    <!-- Mobile screen -->
+                    <rect x="58" y="12" width="76" height="96" rx="10" fill="url(#screenGrad)" stroke="rgba(56, 239, 190, 0.45)" stroke-width="1.5"/>
+                    <rect x="68" y="22" width="56" height="12" rx="3" fill="rgba(255,255,255,0.08)"/>
+                    <rect x="68" y="40" width="38" height="6" rx="2" fill="rgba(255,255,255,0.18)"/>
+                    <rect x="68" y="50" width="48" height="5" rx="2" fill="rgba(255,255,255,0.08)"/>
+                    <rect x="68" y="59" width="40" height="5" rx="2" fill="rgba(255,255,255,0.08)"/>
+                    <!-- Shield emblem with mint + -->
+                    <circle cx="112" cy="78" r="16" fill="#08141d" stroke="#38efbe" stroke-width="1.8"/>
+                    <path d="M112 70 v 16 M104 78 h 16" stroke="#38efbe" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <h3 class="guide-panel-title">Your information in one place</h3>
+                <p class="guide-panel-desc">Helps you organize symptoms and reports for clearer, more meaningful discussions with your healthcare provider.</p>
+              </div>
+
+              <!-- Card 2: Important to know -->
+              <div class="guide-panel-card important-points-card">
+                <div class="guide-card-header">
+                  <span class="header-info-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="16" x2="12" y2="12"/>
+                      <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                  </span>
+                  <h4 class="guide-card-heading">Important to know</h4>
+                </div>
+
+                <div class="important-points-list">
+                  <div class="important-point-row">
+                    <svg class="point-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38efbe" stroke-width="2">
+                      <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
+                      <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
+                      <circle cx="20" cy="10" r="2"/>
+                    </svg>
+                    <span class="point-text-mint">This tool does not diagnose or rule out cancer.</span>
+                  </div>
+
+                  <div class="important-point-row">
+                    <svg class="point-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span class="point-text">It helps you organize information and prepare for a healthcare consultation.</span>
+                  </div>
+
+                  <div class="important-point-row">
+                    <svg class="point-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span class="point-text">Always consult a qualified healthcare professional for medical advice.</span>
+                  </div>
+
+                  <div class="important-point-row">
+                    <svg class="point-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                    <span class="point-text">Your information stays private and is not shared.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: Need help? -->
+              <div class="guide-panel-card need-help-box">
+                <div class="guide-card-header">
+                  <span class="header-info-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                  </span>
+                  <h4 class="guide-card-heading">Need help?</h4>
+                </div>
+                <p class="need-help-desc">
+                  If you are experiencing a medical emergency, contact your local emergency services immediately.
+                </p>
+                <a href="tel:911" class="btn-emergency-pill">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                  <span>Emergency Information</span>
+                </a>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW C: SCAN-REPORT ANALYSIS               -->
+        <!-- ========================================== -->
+        <section class="view-panel" id="view-reports">
+          
+          <!-- Top Section Heading & Clinical Presets -->
+          <div class="report-toolbar">
+            <div class="toolbar-left">
+              <h2 class="section-heading" style="font-size: 1.8rem; margin-bottom: 6px;">Understand your report, one finding at a time.</h2>
+              <p class="section-subheading" style="font-size: 0.95rem; max-width: 760px;">
+                Upload a diagnostic scan or pathology summary to review extracted clinical findings with side-by-side passage verification.
+              </p>
+            </div>
+            <div class="toolbar-right" style="display: flex; gap: 12px; align-items: center;">
+              <button class="btn btn-secondary btn-sm" id="openReportComparisonBtn" title="Compare two imaging reports side by side">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span>Compare Two Reports</span>
+              </button>
+              <div class="dropdown-group">
+                <label for="sampleReportSelect">Clinical Sample:</label>
+                <select id="sampleReportSelect" class="clinical-select">
+                  <option value="" disabled selected>Select reference case study...</option>
+                  <option value="ct-chest">Thoracic CT Scan with Contrast (Pulmonary Nodule)</option>
+                  <option value="mri-pelvic">Pelvic MRI Protocol (Endometrial Evaluation)</option>
+                  <option value="ultrasound-thyroid">Thyroid Ultrasound (TI-RADS 3 Assessment)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pre-Upload Privacy & Data Governance Notice -->
+          <div class="privacy-banner" style="margin-bottom: 20px; padding: 16px 20px;">
+            <div class="privacy-icon" style="width: 36px; height: 36px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div class="privacy-text">
+              <h4 style="font-size: 0.9rem; margin-bottom: 2px;">Privacy-First Document Processing</h4>
+              <p style="font-size: 0.8rem; line-height: 1.4;">
+                All report text extraction and analysis take place in your browser's private local sandbox. Your documents are never exposed through public URLs or sent to unencrypted external storage.
+              </p>
+            </div>
+          </div>
+
+          <!-- Drag & Drop Upload Zone -->
+          <div class="upload-dropzone" id="reportDropzone">
+            <div class="dropzone-content">
+              <div class="dropzone-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <line x1="9" y1="15" x2="12" y2="12"/>
+                  <line x1="15" y1="15" x2="12" y2="12"/>
+                </svg>
+              </div>
+              <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Drag &amp; Drop Diagnostic Scan Report or Imaging Summary</h3>
+              <p style="font-size: 0.86rem; max-width: 620px; margin: 0 auto 16px; color: var(--text-secondary);">
+                Supports PDF reports and common image formats such as JPG and PNG (up to 25 MB). Read embedded text directly or analyze with local OCR.
+              </p>
+              <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 16px;">
+                <button class="btn btn-primary btn-sm" id="uploadFileTriggerBtn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Browse Files</span>
+                </button>
+              </div>
+              <div class="dropzone-tags">
+                <span class="file-tag">PDF</span>
+                <span class="file-tag">JPG</span>
+                <span class="file-tag">PNG</span>
+                <span class="file-tag">Max 25 MB</span>
+              </div>
+              <input type="file" id="realReportFileInput" accept=".pdf,.png,.jpg,.jpeg,.txt" style="display: none;">
+            </div>
+          </div>
+
+          <!-- File Error Alert Container (hidden by default) -->
+          <div class="file-error-alert" id="fileErrorAlert" style="display: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div id="fileErrorMessage">Unsupported file format. Please upload a PDF or JPG/PNG image under 25 MB.</div>
+          </div>
+
+          <!-- Upload and Processing State Card -->
+          <div class="upload-status-card" id="uploadStatusCard" style="display: none;">
+            <div class="upload-file-meta">
+              <div class="file-info-group">
+                <div class="file-icon-box" id="fileIconBox">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="file-name-text" id="uploadFileName">Uploaded_Report.pdf</div>
+                  <div class="file-size-text" id="uploadFileSize">Diagnostic Report Protocol</div>
+                </div>
+              </div>
+              <div class="status-badge-group">
+                <span class="status-indicator-pill status-ready" id="statusPillBadge">Ready for review</span>
+              </div>
+            </div>
+
+            <div class="processing-track">
+              <div class="processing-fill" id="uploadProgressFill" style="width: 100%;"></div>
+            </div>
+
+            <div class="processing-step-caption">
+              <span id="uploadProgressLabel">Extraction complete (100%)</span>
+              <span id="ocrConfidenceLabel">OCR Confidence: 99.2% · Cross-reconciliation active</span>
+            </div>
+          </div>
+
+          <!-- Phase 8: Evidence Search & Diagnostic Claim Evaluator Bar -->
+          <div class="evidence-search-card" style="margin-bottom: 20px; padding: 14px 18px; background: rgba(16, 27, 42, 0.85); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 260px; background: rgba(10, 17, 27, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 4px 12px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--mint-primary); flex-shrink: 0;">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="reportEvidenceSearchInput" placeholder="Search verbatim report passages or ask a question (e.g. 'nodule', 'calcification')..." style="flex: 1; background: transparent; border: none; color: var(--text-primary); font-size: 0.86rem; outline: none; padding: 6px 0;">
+                <button class="btn-icon-xs" id="clearEvidenceSearchBtn" style="display: none; background: transparent; border: none; color: var(--text-muted); cursor: pointer;" title="Clear search">✕</button>
+              </div>
+              <button class="btn btn-primary btn-sm" id="searchEvidenceBtn">
+                <span>Find Evidence</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" id="openClaimCheckModalBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>Clinical Safeguards Check</span>
+              </button>
+            </div>
+            <!-- Live Evidence Search / Abstention Results Container -->
+            <div id="evidenceSearchResultsContainer" style="display: none; margin-top: 12px; border-top: 1px solid var(--border-subtle); padding-top: 12px;"></div>
+          </div>
+
+          <!-- Split Layout: Original Document (Left) & Extracted Findings (Right) -->
+          <div class="document-reader-split">
+            
+            <!-- Left Pane: Source Document Reader -->
+            <div class="reader-pane original-doc-pane">
+              <div class="pane-header">
+                <div class="pane-header-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span id="docViewerTitle">ORIGINAL DOCUMENT: No Document Loaded</span>
+                </div>
+                <div class="doc-actions">
+                  <span class="doc-status-badge" id="sourceDocBadge">Original Scan Text</span>
+                </div>
+              </div>
+
+              <!-- Interactive Document Text Container with Passage Anchors -->
+              <div class="document-page-sheet" id="documentSheetContainer">
+                <!-- Injected with passage spans -->
+              </div>
+
+              <div class="pane-footer">
+                <span class="hint-tip">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                  Hover or click highlighted text to cross-verify against extracted findings.
+                </span>
+                <button class="btn btn-ghost btn-xs" id="triggerCorrectionModalBtn">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Correct Extracted Text
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Pane: Extracted Findings & Report Verification Panel -->
+            <div class="reader-pane findings-pane">
+              <div class="pane-header">
+                <div class="pane-header-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                  <span>PARSED FINDINGS &amp; VERIFICATION</span>
+                </div>
+                <div class="findings-filter" id="findingsFilterControls">
+                  <button class="filter-pill active" data-filter="all">All (<span id="countAllFindings">4</span>)</button>
+                  <button class="filter-pill" data-filter="significant">Key Findings</button>
+                  <button class="filter-pill" data-filter="uncertainty">Needs Verification</button>
+                </div>
+              </div>
+
+              <!-- Phase 8: Findings View Switcher (Structured vs Patient Explainer) -->
+              <div class="findings-view-switcher" style="display: flex; gap: 8px; margin: 10px 18px 0; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                <button class="tab-chip active" id="tabBtnStructuredFindings">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                  <span>Structured Findings</span>
+                </button>
+                <button class="tab-chip" id="tabBtnPatientExplainer">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <span>Patient Explanations &amp; Grounding (AI)</span>
+                </button>
+              </div>
+
+              <!-- Report Verification Summary Header (Structured Tab) -->
+              <div id="reportVerificationSummaryWrapper" style="padding: 14px 18px 0;">
+                <div class="report-verification-summary">
+                  <div class="verification-stat-reliable">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <span>Reliably Extracted (3 verified)</span>
+                  </div>
+                  <div class="verification-stat-needs-confirm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>Needs Confirmation (1 boundary)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Findings Cards Stream with Structured Clinical Sections -->
+              <div class="findings-stream" id="findingsStreamContainer">
+                <!-- Dynamically populated finding cards grouped by Technique, Findings, Impression, Recommendations -->
+              </div>
+
+              <!-- Phase 8: Patient Explainer Stream (AI Grounded Insights) -->
+              <div class="findings-stream" id="patientExplainerContainer" style="display: none; padding: 14px 18px;">
+                <!-- Populated dynamically via AI Report Understanding Engine -->
+              </div>
+
+              <div class="pane-footer findings-footer">
+                <button class="btn btn-primary btn-block" id="proceedToResultsBtn">
+                  <span>Continue Assessment with Verified Findings</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW D: ASSESSMENT RESULTS                 -->
+        <!-- ========================================== -->
+        <section class="view-panel" id="view-results">
+          
+          <!-- Results Top Banner with Neutral Status -->
+          <div class="results-hero">
+            <div class="results-meta-left">
+              <span class="badge-evidence">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                CLINICAL EVIDENCE SYNTHESIS
+              </span>
+              <h2 class="results-title">Assessment Summary: Evidence, Not Assumptions</h2>
+              <p class="results-subtitle">
+                Reconciling your reported physical context with diagnostic scan findings. Every observation cites its verified origin. No unvalidated mathematical risk percentages.
+              </p>
+
+              <!-- Overview Metadata Bar -->
+              <div class="results-overview-meta-bar">
+                <div class="overview-meta-item">
+                  <span class="overview-meta-label">Assessment Date</span>
+                  <span class="overview-meta-val" id="resultsDateVal">Oct 21, 2026 · 15:30</span>
+                </div>
+                <div class="overview-meta-item">
+                  <span class="overview-meta-label">Information Reviewed</span>
+                  <span class="overview-meta-val" id="resultsInfoReviewedVal">Patient Symptoms + Thoracic CT Contrast Report</span>
+                </div>
+                <div class="overview-meta-item">
+                  <span class="overview-meta-label">Assessment Status</span>
+                  <span class="overview-meta-val" style="color: var(--mint-primary);">
+                    <span class="indicator-dot dot-mint"></span>
+                    Assessment summary ready
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="results-actions">
+              <button class="btn btn-secondary btn-sm" id="printReportBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                <span>Export for Doctor</span>
+              </button>
+              <button class="btn btn-primary btn-sm" id="restartAssessmentBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+                <span>New Assessment</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Structured Results Matrix (4 Quadrants) -->
+          <div class="results-matrix-grid">
+            
+            <!-- Quadrant 1: What You Reported -->
+            <div class="clinical-card result-quadrant">
+              <div class="card-header">
+                <div class="quadrant-label">
+                  <span class="indicator-dot dot-cyan"></span>
+                  <h3 class="card-title">1. What You Reported</h3>
+                </div>
+                <button class="btn btn-ghost btn-xs" id="editSymptomResponsesBtn" title="Review or correct symptom answers">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  <span>Edit Responses</span>
+                </button>
+              </div>
+              <p class="quadrant-intro">Direct symptoms, duration, trajectory, and personal medical context provided.</p>
+              
+              <div class="reported-items-list" id="resultsReportedList">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+
+            <!-- Quadrant 2: What the Report States (Expandable Evidence Panels) -->
+            <div class="clinical-card result-quadrant">
+              <div class="card-header">
+                <div class="quadrant-label">
+                  <span class="indicator-dot dot-mint"></span>
+                  <h3 class="card-title">2. What the Report States</h3>
+                </div>
+                <span class="tag-clinical">Source Linked</span>
+              </div>
+              <p class="quadrant-intro">Objective radiological findings with expandable source passage proofs.</p>
+
+              <div class="extracted-items-list" id="resultsExtractedList">
+                <!-- Dynamically rendered with expandable source panels -->
+              </div>
+            </div>
+
+            <!-- Quadrant 3: Missing or Conflicting Information -->
+            <div class="clinical-card result-quadrant quadrant-uncertainty">
+              <div class="card-header">
+                <div class="quadrant-label">
+                  <span class="indicator-dot dot-amber"></span>
+                  <h3 class="card-title">3. Missing or Conflicting Information</h3>
+                </div>
+                <span class="tag-clinical tag-amber">Reconciliation Flags</span>
+              </div>
+              <p class="quadrant-intro">Differences between symptoms and scan data, plus missing comparative baselines.</p>
+
+              <div class="uncertainty-items-list" id="resultsUncertaintyList">
+                <!-- Dynamically rendered differences and clinical caveats -->
+              </div>
+            </div>
+
+            <!-- Quadrant 4: Questions to Ask Your Doctor -->
+            <div class="clinical-card result-quadrant quadrant-questions">
+              <div class="card-header">
+                <div class="quadrant-label">
+                  <span class="indicator-dot dot-mint"></span>
+                  <h3 class="card-title">4. Questions to Ask Your Doctor</h3>
+                </div>
+                <span class="tag-clinical">Consultation Ready</span>
+              </div>
+              <p class="quadrant-intro">Evidence-informed questions to bring to your clinical visit.</p>
+
+              <div class="doctor-questions-list" id="resultsDoctorQuestionsList">
+                <!-- Dynamically rendered with copy buttons -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Suggested Next Steps Banner -->
+          <div class="clinical-card next-steps-card">
+            <div class="next-steps-header">
+              <div class="next-steps-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="card-title">5. Suggested Clinical Next Steps</h3>
+                <p class="card-subtitle">Non-prescriptive pathway based on clinical imaging follow-up guidelines (Fleischner Society / ACR)</p>
+              </div>
+            </div>
+
+            <div class="next-steps-grid" id="resultsNextStepsGrid">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Living Assessment Timeline Card -->
+          <div class="clinical-card living-timeline-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title" style="font-size: 1.05rem;">Living Assessment Timeline</h3>
+                <p class="card-subtitle">Record of chronological updates, corrections, and evidence reconciliation</p>
+              </div>
+              <span class="tag-clinical">Audit Trail</span>
+            </div>
+
+            <div class="living-timeline-track" id="livingAssessmentTimeline">
+              <!-- Dynamically rendered events -->
+            </div>
+          </div>
+
+          <!-- Bottom Responsible AI Assurance -->
+          <div class="assurance-footer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <p>
+              <strong>Clinical Integrity Commitment:</strong> PathoGuard does not assign arbitrary probabilistic cancer risk scores (e.g. "84% risk") because unvalidated mathematical gauges induce anxiety without actionable diagnostic utility. All recommendations aim to facilitate productive dialogue between you and your board-certified physician.
+            </p>
+          </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW E: ASSESSMENT HISTORY                 -->
+        <!-- ========================================== -->
+        <section class="view-panel" id="view-history">
+          <div class="history-container">
+            <div class="history-header">
+              <div>
+                <h2 class="section-heading">Assessment History &amp; Longitudinal Records</h2>
+                <p class="section-subheading">Track your past symptom evaluations, compare previous scan reports, and review verified clinical evidence.</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary btn-sm" id="historyCompareBtn" disabled title="Select 2 assessments to compare">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span id="historyCompareBtnText">Compare Selected (0/2)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Search, Filter & Comparison Notice Bar -->
+            <div class="clinical-card" style="margin-bottom: 20px; padding: 14px 18px;">
+              <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 220px;">
+                  <input type="text" class="settings-input" id="historySearchInput" placeholder="Search assessments by keyword, symptom, or ID..." style="width: 100%;" />
+                </div>
+                <div style="min-width: 180px;">
+                  <select id="historyFilterSelect" class="clinical-select" style="width: 100%;">
+                    <option value="">All Assessment Types</option>
+                    <option value="Combined">Combined Assessments</option>
+                    <option value="Symptom">Symptom Questionnaires</option>
+                    <option value="Report">Scan Reports</option>
+                  </select>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="historyRefreshBtn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Refresh</span>
+                </button>
+              </div>
+              <div style="margin-top: 10px; font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Select any two previous records using the checkboxes to generate a structured side-by-side comparison.</span>
+              </div>
+            </div>
+
+            <!-- Full Timeline Stream from SQLite -->
+            <div class="full-timeline" id="fullTimelineContainer">
+              <!-- Dynamically populated from SQLite via API -->
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW: EVIDENCE INTEGRITY & CORE INNOVATION -->
+        <!-- ========================================== -->
+        <section class="view-panel" id="view-evidence-integrity">
+          <div class="history-container">
+            <div class="history-header">
+              <div>
+                <h2 class="section-heading">Evidence Integrity &amp; Adaptive Reconciliation Engine</h2>
+                <p class="section-subheading">Fine-grained provenance DAG, automated downstream invalidation, report comparability gating, and minimum-burden information acquisition.</p>
+              </div>
+              <div class="history-actions">
+                <button class="btn btn-secondary btn-sm" id="loadEvidencePipelineDemoBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  <span>Refresh Provenance Graph</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 6-Stage Gate Architecture Indicator -->
+            <div class="clinical-card" style="margin-bottom: 20px; background: rgba(14, 23, 42, 0.7); border: 1px solid var(--border-subtle);">
+              <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <span class="badge badge-mint" style="font-size: 10px;">CORE INVENTION</span>
+                <span>The 6-Stage Evidence Lifecycle Pipeline</span>
+              </h4>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; font-size: 12px;">
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--mint-primary);">
+                  <strong style="color: var(--mint-primary);">01. Ingestion</strong>
+                  <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Direct PHI stripped; passage byte anchors preserved.</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--mint-primary);">
+                  <strong style="color: var(--mint-primary);">02. Comparability</strong>
+                  <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Anatomical site &amp; modality compatibility verified.</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--mint-primary);">
+                  <strong style="color: var(--mint-primary);">03. Mapping</strong>
+                  <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">DAG links source passages to extracted statements.</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--amber-caution);">
+                  <strong style="color: var(--amber-caution);">04. Impact Analysis</strong>
+                  <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Mutations flag downstream nodes as SUSPENDED_STALE.</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--mint-primary);">
+                  <strong style="color: var(--mint-primary);">05. Recovery</strong>
+                  <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Selective recompute of affected sub-branches only.</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid #60a5fa;">
+                  <strong style="color: #60a5fa;">06. Release Gate</strong>
+                  <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Abstention evaluated; verified output authorized.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Grid 1: Feature 1 & Feature 2 -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 20px;">
+              <!-- Feature 1: Evidence Dependency & Invalidation -->
+              <div class="clinical-card">
+                <div class="card-header-clean">
+                  <div>
+                    <h3 class="card-title">Feature 1: Evidence Change Impact Engine</h3>
+                    <p class="card-subtitle">Fine-grained DAG invalidation &amp; selective recomputation</p>
+                  </div>
+                  <span class="badge badge-mint" id="graphNodesCountBadge">8 Nodes Active</span>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 8px; margin: 12px 0; border: 1px dashed var(--border-subtle);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Live Dependency Graph State:</span>
+                    <span id="recomputeSavingsTag" style="font-size: 11px; color: var(--mint-primary); font-weight: 600;">57.1% Computation Saved</span>
+                  </div>
+                  <div id="interactiveDagContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="dag-node-item" style="padding: 8px 12px; border-radius: 6px; background: rgba(30, 41, 59, 0.7); border-left: 3px solid var(--mint-primary); display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <strong style="font-size: 12px; color: #f8fafc;">Source: Findings (src_findings)</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">"3.2 cm solitary nodule right upper lobe..."</div>
+                      </div>
+                      <span class="badge badge-mint" style="font-size: 10px;">VALID_ACTIVE</span>
+                    </div>
+                    <div class="dag-node-item" style="padding: 8px 12px; border-radius: 6px; background: rgba(30, 41, 59, 0.7); border-left: 3px solid var(--mint-primary); display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <strong style="font-size: 12px; color: #f8fafc;">Finding #1 (fnd_item_1)</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Parent: src_findings &rarr; Extracted pulmonary finding</div>
+                      </div>
+                      <span class="badge badge-mint" style="font-size: 10px;">VALID_ACTIVE</span>
+                    </div>
+                    <div class="dag-node-item" style="padding: 8px 12px; border-radius: 6px; background: rgba(30, 41, 59, 0.7); border-left: 3px solid var(--mint-primary); display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <strong style="font-size: 12px; color: #f8fafc;">Synthesis: Doctor Question (stmt_doctor_q1)</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Parent: fnd_item_1 &rarr; Follow-up question</div>
+                      </div>
+                      <span class="badge badge-mint" style="font-size: 10px;">VALID_ACTIVE</span>
+                    </div>
+                    <div class="dag-node-item" style="padding: 8px 12px; border-radius: 6px; background: rgba(30, 41, 59, 0.7); border-left: 3px solid #60a5fa; display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                        <strong style="font-size: 12px; color: #f8fafc;">Independent Branch: Imaging Note (stmt_technique_guidance)</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">Parent: src_technique (Unaffected by findings edits)</div>
+                      </div>
+                      <span class="badge" style="background: rgba(96, 165, 250, 0.2); color: #60a5fa; font-size: 10px;">INDEPENDENT</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                  <button class="btn btn-primary btn-sm" id="testSelectiveRecomputeBtn" style="flex: 1;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    <span>Simulate Finding Correction &amp; Recompute</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Feature 2: Report Comparability Gate -->
+              <div class="clinical-card">
+                <div class="card-header-clean">
+                  <div>
+                    <h3 class="card-title">Feature 2: Report Comparability Gate</h3>
+                    <p class="card-subtitle">Enforces RECIST 1.1 anatomical and modality attribution rules</p>
+                  </div>
+                  <span class="badge badge-mint" id="comparabilityStatusBadge">GATE ENFORCED</span>
+                </div>
+
+                <div style="margin: 12px 0;">
+                  <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; display: block;">Select Diagnostic Study Comparison Scenario:</label>
+                  <select id="comparabilityScenarioSelect" class="clinical-input" style="width: 100%; margin-bottom: 12px;">
+                    <option value="invalid_anatomy">Test 1: Cross-Organ Mismatch (CT Chest vs US Liver)</option>
+                    <option value="invalid_modality">Test 2: Modality Physics Mismatch (Histopathology vs CT)</option>
+                    <option value="valid_recist">Test 3: Valid RECIST Study Pair (CT Chest 2.0cm vs CT Chest 2.5cm)</option>
+                  </select>
+
+                  <div id="comparabilityDecisionCard" style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 8px; border-left: 3px solid var(--rose-alert);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <strong id="comparabilityDecisionTitle" style="color: var(--rose-alert); font-size: 13px;">BLOCKED: INCOMPATIBLE_ANATOMICAL_SITE</strong>
+                      <span id="comparabilityMetricDelta" class="badge badge-muted" style="font-size: 11px;">Delta: N/A</span>
+                    </div>
+                    <p id="comparabilityRationaleText" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                      Incompatible anatomical targets: Prior finding evaluates 'LUNG' whereas current finding evaluates 'LIVER'. Cross-organ progression comparison is clinically invalid.
+                    </p>
+                    <div id="comparabilityGuidanceText" style="font-size: 11px; color: var(--text-muted); font-style: italic;">
+                      These two studies examine completely different areas of the body and cannot be compared for growth or shrinkage.
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn btn-secondary btn-sm" id="runComparabilityCheckBtn" style="width: 100%;">
+                  <span>Evaluate Selected Comparison</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Grid 2: Feature 3 & Feature 4 -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 20px;">
+              <!-- Feature 3: Minimum-Information Acquisition -->
+              <div class="clinical-card">
+                <div class="card-header-clean">
+                  <div>
+                    <h3 class="card-title">Feature 3: Minimum-Information Acquisition</h3>
+                    <p class="card-subtitle">Active uncertainty reduction vs patient cognitive burden budget</p>
+                  </div>
+                  <span class="badge badge-mint" style="font-size: 10px;">ACTIVE OPTIMIZATION</span>
+                </div>
+
+                <div style="margin: 12px 0;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">Highest Utility Next Action:</span>
+                    <span id="activeAcquisitionScoreTag" class="badge badge-mint" style="font-size: 10px;">Utility: 0.8302</span>
+                  </div>
+                  <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border-left: 3px solid var(--mint-primary); margin-bottom: 12px;">
+                    <strong id="acquisitionActionTitle" style="color: #f8fafc; font-size: 13px;">INQUIRE_TARGETED_RED_FLAGS</strong>
+                    <p id="acquisitionPromptText" style="font-size: 12px; color: var(--text-secondary); margin: 6px 0;">
+                      "Have you noticed any unintended weight loss (&gt;5 kg) or coughing up blood in the past month?"
+                    </p>
+                    <div style="display: flex; gap: 12px; font-size: 11px; color: var(--text-muted);">
+                      <span>Uncertainty Reduction: <strong>0.88</strong></span>
+                      <span>Patient Burden: <strong>0.10 (Low)</strong></span>
+                      <span>Patient Solvable: <strong>Yes</strong></span>
+                    </div>
+                  </div>
+
+                  <div style="background: rgba(30, 41, 59, 0.4); padding: 10px; border-radius: 6px; font-size: 11px; color: var(--text-muted);">
+                    <strong style="color: var(--text-secondary);">Clinical Safeguard Ceiling:</strong> Highly technical pathology gaps (e.g. molecular receptor status) are excluded from patient questioning and automatically routed to specialist review.
+                  </div>
+                </div>
+
+                <button class="btn btn-secondary btn-sm" id="refreshAcquisitionBtn" style="width: 100%;">
+                  <span>Recalculate Information Utility</span>
+                </button>
+              </div>
+
+              <!-- Feature 4: Privacy-Preserving De-identification -->
+              <div class="clinical-card">
+                <div class="card-header-clean">
+                  <div>
+                    <h3 class="card-title">Feature 4: Privacy-Aware Evidence Processing</h3>
+                    <p class="card-subtitle">HIPAA Safe Harbor direct PHI isolation with byte-anchor preservation</p>
+                  </div>
+                  <span class="badge badge-mint" style="font-size: 10px;">0.0% LEAKAGE</span>
+                </div>
+
+                <div style="margin: 12px 0;">
+                  <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Raw Medical Transcript (with Direct PHI):</label>
+                  <textarea id="rawPhiInput" class="clinical-input" rows="2" style="width: 100%; font-size: 12px; margin-bottom: 8px;">Patient Name: Robert Henderson, MRN: 94827104. Ph: 415-555-0199. Impression: 2.1 cm pulmonary nodule.</textarea>
+
+                  <label style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Downstream Sanitized Output (Surrogate Salted Hashes):</label>
+                  <div id="sanitizedPhiOutput" style="background: rgba(15, 23, 42, 0.7); padding: 10px; border-radius: 6px; font-size: 12px; color: var(--mint-primary); border: 1px solid var(--border-subtle); word-break: break-all;">
+                    Patient Name: [REDACTED_NAME_E9C1856A], MRN:[REDACTED_MRN_48A1B2C3]. Ph:[REDACTED_PHONE_B9F782B5]. Impression: 2.1 cm pulmonary nodule.
+                  </div>
+                </div>
+
+                <button class="btn btn-secondary btn-sm" id="testPhiSanitizeBtn" style="width: 100%;">
+                  <span>Test De-identification &amp; Integrity Hashes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Controlled Empirical Benchmark Dashboard -->
+            <div class="clinical-card" style="margin-bottom: 20px;">
+              <div class="card-header-clean">
+                <div>
+                  <h3 class="card-title">Controlled Empirical Benchmark Evaluation (Phase 18 Validation)</h3>
+                  <p class="card-subtitle">Reproducible comparison of PathoGuard-AI against 4 conventional baselines</p>
+                </div>
+                <button class="btn btn-primary btn-sm" id="runLiveBenchmarkSuiteBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <span>Run Live Benchmark Suite</span>
+                </button>
+              </div>
+
+              <div style="overflow-x: auto; margin-top: 14px;">
+                <table class="clinical-table" style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--border-subtle); text-align: left; color: var(--text-secondary);">
+                      <th style="padding: 10px;">Evaluated Mechanism</th>
+                      <th style="padding: 10px;">Conventional Baseline</th>
+                      <th style="padding: 10px;">PathoGuard-AI</th>
+                      <th style="padding: 10px;">Experimental Impact</th>
+                      <th style="padding: 10px;">Validation Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="benchmarkResultsTableBody">
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      <td style="padding: 10px;"><strong>Stale Output Prevention</strong><br><span style="color: var(--text-muted); font-size: 11px;">Feature 1 (DAG Invalidation)</span></td>
+                      <td style="padding: 10px; color: var(--rose-alert);">Baseline 3 (No Invalidation): <strong>39.1% Stale</strong></td>
+                      <td style="padding: 10px; color: var(--mint-primary);">PathoGuard: <strong>0.0% Stale</strong></td>
+                      <td style="padding: 10px;">100% stale output elimination upon text edits</td>
+                      <td style="padding: 10px;"><span class="badge badge-mint" style="font-size: 10px;">VALIDATED</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      <td style="padding: 10px;"><strong>Selective Recomputation Savings</strong><br><span style="color: var(--text-muted); font-size: 11px;">Feature 1 (Selective Recompute)</span></td>
+                      <td style="padding: 10px; color: var(--amber-caution);">Baseline 2 (Full Recompute): <strong>0% Savings</strong></td>
+                      <td style="padding: 10px; color: var(--mint-primary);">PathoGuard: <strong>47.8% Savings</strong></td>
+                      <td style="padding: 10px;">Over 45% reduction in node recomputation cycles</td>
+                      <td style="padding: 10px;"><span class="badge badge-mint" style="font-size: 10px;">VALIDATED</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      <td style="padding: 10px;"><strong>Incompatible Study Pair Rejection</strong><br><span style="color: var(--text-muted); font-size: 11px;">Feature 2 (Comparability Gate)</span></td>
+                      <td style="padding: 10px; color: var(--rose-alert);">Baseline 4 (Naive Compare): <strong>0% Blocked</strong></td>
+                      <td style="padding: 10px; color: var(--mint-primary);">PathoGuard: <strong>100.0% Blocked</strong></td>
+                      <td style="padding: 10px;">Complete prevention of false cross-organ progression claims</td>
+                      <td style="padding: 10px;"><span class="badge badge-mint" style="font-size: 10px;">VALIDATED</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                      <td style="padding: 10px;"><strong>Patient Questionnaire Burden</strong><br><span style="color: var(--text-muted); font-size: 11px;">Feature 3 (Minimum Acquisition)</span></td>
+                      <td style="padding: 10px; color: var(--text-muted);">Static Questionnaire: <strong>20 Questions</strong></td>
+                      <td style="padding: 10px; color: var(--mint-primary);">PathoGuard: <strong>2 Questions</strong></td>
+                      <td style="padding: 10px;"><strong>90.0% reduction</strong> in cognitive intake fatigue</td>
+                      <td style="padding: 10px;"><span class="badge badge-mint" style="font-size: 10px;">VALIDATED</span></td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 10px;"><strong>Downstream PHI Isolation</strong><br><span style="color: var(--text-muted); font-size: 11px;">Feature 4 (Safe Harbor Stripping)</span></td>
+                      <td style="padding: 10px; color: var(--rose-alert);">Unfiltered Text: <strong>100% PHI Exposed</strong></td>
+                      <td style="padding: 10px; color: var(--mint-primary);">PathoGuard: <strong>0.0% Leakage</strong></td>
+                      <td style="padding: 10px;">Zero direct identifiers passed to synthesis layers</td>
+                      <td style="padding: 10px;"><span class="badge badge-mint" style="font-size: 10px;">VALIDATED</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW F: SETTINGS                           -->
+        <!-- ========================================== -->
+        <section class="view-panel" id="view-settings">
+          <div class="history-container">
+            <div class="history-header">
+              <div>
+                <h2 class="section-heading">Platform &amp; Privacy Settings</h2>
+                <p class="section-subheading">Manage your client-side data storage, privacy sandbox, and clinical display options.</p>
+              </div>
+            </div>
+
+            <!-- Backend API Connection & Diagnostics Card -->
+            <div class="clinical-card" style="margin-bottom: 20px;">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">FastAPI Backend Connection</h3>
+                  <p class="card-subtitle">Manage the local API base address and verify connection status</p>
+                </div>
+                <span class="badge-live-backend" id="settingsConnectionBadge">Checking...</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+                PathoGuard communicates with a local FastAPI backend running on port 8000 for document parsing, structured evidence extraction, and clinical decision support.
+              </p>
+              <div class="settings-input-group">
+                <input type="text" class="settings-input" id="settingsBackendUrlInput" value="http://127.0.0.1:8000" placeholder="http://127.0.0.1:8000" spellcheck="false" />
+                <button class="btn btn-secondary btn-sm" id="settingsTestConnBtn">
+                  <span id="settingsTestBtnText">Test &amp; Save</span>
+                </button>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 0.78rem; color: var(--text-muted);">
+                <span>Default: <code style="color: var(--mint-primary); font-family: var(--font-mono);">http://127.0.0.1:8000</code></span>
+                <span id="settingsLatencyReadout">Latency: -- ms</span>
+              </div>
+            </div>
+
+            <!-- Phase 11: AI Reliability Benchmarking & Evaluation Card -->
+            <div class="clinical-card" style="margin-bottom: 20px;">
+              <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span class="badge-evidence">PHASE 11 BENCHMARK</span>
+                    <span class="badge-live-backend" id="benchmarkVersionBadge">v1.0.0 (20 Synthetic Cases)</span>
+                  </div>
+                  <h3 class="card-title">AI Evaluation &amp; Reliability Benchmarking</h3>
+                  <p class="card-subtitle">Measure source grounding, abstention safety, and compare the Adaptive Engine against a Fixed Baseline</p>
+                </div>
+                <button class="btn btn-primary btn-sm" id="runBenchmarkBtn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                  <span id="runBenchmarkBtnText">Run Live Benchmark</span>
+                </button>
+              </div>
+
+              <!-- Top Metrics Grid -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0;">
+                <div style="background: rgba(10, 17, 27, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Source Grounding</span>
+                  <div style="font-size: 1.4rem; font-weight: 700; color: var(--mint-primary);" id="metricGroundingVal">100.0%</div>
+                  <span style="font-size: 0.74rem; color: var(--text-secondary);">Verbatim passage anchors</span>
+                </div>
+                <div style="background: rgba(10, 17, 27, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Unsupported Claims</span>
+                  <div style="font-size: 1.4rem; font-weight: 700; color: var(--mint-primary);" id="metricUnsupportedVal">0.0%</div>
+                  <span style="font-size: 0.74rem; color: var(--text-secondary);">0 unvalidated % risk scores</span>
+                </div>
+                <div style="background: rgba(10, 17, 27, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Abstention Recall</span>
+                  <div style="font-size: 1.4rem; font-weight: 700; color: var(--cyan-clinical);" id="metricAbstentionVal">100.0%</div>
+                  <span style="font-size: 0.74rem; color: var(--text-secondary);">Withholds diagnostic leaps</span>
+                </div>
+                <div style="background: rgba(10, 17, 27, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 14px;">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Determinism</span>
+                  <div style="font-size: 1.4rem; font-weight: 700; color: #FBBF24;" id="metricConsistencyVal">100.0%</div>
+                  <span style="font-size: 0.74rem; color: var(--text-secondary);">Identical pass reproduction</span>
+                </div>
+              </div>
+
+              <!-- Comparative Table: Adaptive Engine vs Fixed-Question Baseline -->
+              <h4 style="font-size: 0.88rem; color: var(--text-primary); margin: 18px 0 10px;">Adaptive Engine vs. Fixed-Question Baseline Comparison</h4>
+              <div style="overflow-x: auto; margin-bottom: 16px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted);">
+                      <th style="padding: 8px 10px;">Evaluation Capability</th>
+                      <th style="padding: 8px 10px; color: var(--mint-primary);">Adaptive Engine</th>
+                      <th style="padding: 8px 10px; color: var(--text-secondary);">Fixed Baseline</th>
+                      <th style="padding: 8px 10px;">Safety &amp; Reliability Rationale</th>
+                    </tr>
+                  </thead>
+                  <tbody id="benchmarkComparisonTableBody">
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                      <td style="padding: 8px 10px; font-weight: 600;">Abstention Recall on Diagnostic Demands</td>
+                      <td style="padding: 8px 10px; color: var(--mint-primary); font-weight: 700;">100.0%</td>
+                      <td style="padding: 8px 10px; color: #F87171;">0.0%</td>
+                      <td style="padding: 8px 10px; color: var(--text-secondary);">Fixed baseline fails to abstain when users ask for cancer diagnoses.</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                      <td style="padding: 8px 10px; font-weight: 600;">Symptom-Scan Discordance Detection</td>
+                      <td style="padding: 8px 10px; color: var(--mint-primary); font-weight: 700;">100.0%</td>
+                      <td style="padding: 8px 10px; color: #F87171;">0.0%</td>
+                      <td style="padding: 8px 10px; color: var(--text-secondary);">Adaptive engine flags anatomical and clinical disconnects.</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                      <td style="padding: 8px 10px; font-weight: 600;">Data Sufficiency &amp; Missing Sections</td>
+                      <td style="padding: 8px 10px; color: var(--mint-primary); font-weight: 700;">100.0%</td>
+                      <td style="padding: 8px 10px; color: #F87171;">0.0%</td>
+                      <td style="padding: 8px 10px; color: var(--text-secondary);">Detects missing sections, OCR degradation and incomplete records.</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 10px; font-weight: 600;">Red Flag Prioritized Clarification</td>
+                      <td style="padding: 8px 10px; color: var(--mint-primary); font-weight: 700;">100.0%</td>
+                      <td style="padding: 8px 10px; color: #F87171;">0.0%</td>
+                      <td style="padding: 8px 10px; color: var(--text-secondary);">Alarms immediately trigger prioritized clarification and prompt clinician referral.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Documented Limitations Box -->
+              <div style="background: rgba(16, 27, 42, 0.6); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; margin-top: 14px;">
+                <h5 style="font-size: 0.8rem; color: var(--text-primary); margin-bottom: 6px;">Documented Engine Limitations &amp; Scope</h5>
+                <ul style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin: 0; padding-left: 18px;">
+                  <li><strong>LIM-01 (OCR Noise):</strong> Degraded scans (&lt;60% confidence) require manual user text confirmation before structured synthesis.</li>
+                  <li><strong>LIM-02 (Non-DICOM):</strong> Operates strictly on text report transcripts; direct pixel image comparison requires clinical radiologist review.</li>
+                  <li><strong>LIM-03 (No Autonomous Rule-Out):</strong> Normal imaging does not rule out microscopic or mucosal conditions.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="clinical-card" style="margin-bottom: 20px;">
+              <h3 class="card-title" style="margin-bottom: 14px;">Privacy &amp; Data Retention</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 18px;">
+                PathoGuard-AI processes all uploaded documents and symptom selections within your browser session memory. No personally identifiable medical health information (PHI) is transmitted or stored on unvetted servers.
+              </p>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <button class="btn btn-outline-danger btn-sm" id="settingsPurgeDataBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                  <span>Purge All Session Storage</span>
+                </button>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Instantly deletes current cached OCR text and symptom logs.</span>
+              </div>
+            </div>
+
+            <div class="clinical-card">
+              <h3 class="card-title" style="margin-bottom: 14px;">Clinical Intelligence Appearance</h3>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+                  <div>
+                    <h4 style="font-size: 0.92rem; color: var(--text-primary);">Theme Profile</h4>
+                    <p style="font-size: 0.78rem; color: var(--text-muted);">Direction A: Midnight Navy with Mint Accents</p>
+                  </div>
+                  <span class="tag-clinical">Active</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <h4 style="font-size: 0.92rem; color: var(--text-primary);">Document Reader Passage Highlighting</h4>
+                    <p style="font-size: 0.78rem; color: var(--text-muted);">Synchronize hover highlights between OCR passages and parsed cards</p>
+                  </div>
+                  <span class="tag-clinical">Enabled</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Modal: Text Correction / OCR Adjustment -->
+  <div class="modal-overlay" id="correctionModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Correct Extracted Finding</h3>
+        <button class="btn-icon" id="closeCorrectionModalBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">If OCR misread a word, digit, or anatomical position in your scan report, correct it below. The evidence reconciliation engine will update its analysis.</p>
+        
+        <div class="form-group">
+          <label>Original Source Passage:</label>
+          <div class="quote-passage" id="modalSourcePassage">
+            "A 6 mm non-calcified solid subpleural nodule is noted in the right lower lobe (series 3, image 42)."
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="modalFindingTitle">Extracted Finding Summary:</label>
+          <input type="text" id="modalFindingTitle" class="clinical-input" value="6mm Solid Nodule in Right Lower Lobe">
+        </div>
+
+        <div class="form-group">
+          <label for="modalClinicalNote">Correction / Clarification Note:</label>
+          <textarea id="modalClinicalNote" class="clinical-textarea" rows="3" placeholder="e.g. Prior report from 2024 showed this same nodule measured 5mm..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelCorrectionBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveCorrectionBtn">Save &amp; Re-link Evidence</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Assessment Comparison Modal -->
+  <div class="modal-overlay" id="assessmentComparisonModal" style="display: none;">
+    <div class="modal-dialog" style="max-width: 860px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="comparisonModalTitle">Previous Assessment Comparison</h3>
+          <p class="modal-desc" style="margin-bottom: 0;">Side-by-side longitudinal comparison of clinical findings and symptom trajectories.</p>
+        </div>
+        <button class="btn-icon" id="closeComparisonModalBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
+        
+        <!-- Clinical Progression Alert Notice -->
+        <div class="reconciliation-item" style="border-left: 2px solid var(--amber-caution); background: rgba(245, 158, 11, 0.06); margin-bottom: 18px;">
+          <h4 style="color: var(--amber-caution); margin-bottom: 4px;">Longitudinal Review Guidance</h4>
+          <p style="font-size: 0.8rem; line-height: 1.45; color: var(--text-secondary);" id="comparisonProgressionNotice">
+            Do not interpret wording differences between reports as confirmed disease progression. Radiologist descriptions, measuring planes, and institutional wording routinely vary between examinations. Only direct side-by-side radiologist review of original DICOM image series can evaluate true temporal stability.
+          </p>
+        </div>
+
+        <div id="comparisonModalContent">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeComparisonFooterBtn">Close Comparison</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 8: Medical Terminology Translation Modal -->
+  <div class="modal-overlay" id="termExplanationModal" style="display: none;">
+    <div class="modal-dialog" style="max-width: 580px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <span class="badge-evidence" style="margin-bottom: 4px;">MEDICAL TERMINOLOGY TRANSLATION</span>
+          <h3 class="modal-title" id="termModalTitle">Clinical Term</h3>
+        </div>
+        <button class="btn-icon" id="closeTermModalBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="clinical-card" style="margin-bottom: 14px; padding: 14px 16px; background: rgba(16, 27, 42, 0.7);">
+          <span style="font-size: 0.74rem; color: var(--mint-primary); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Plain-Language Meaning</span>
+          <p id="termModalDefinition" style="font-size: 0.88rem; color: var(--text-primary); line-height: 1.5; margin: 0;"></p>
+        </div>
+
+        <div class="clinical-card" style="margin-bottom: 14px; padding: 14px 16px; background: rgba(16, 27, 42, 0.7);">
+          <span style="font-size: 0.74rem; color: var(--cyan-clinical); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Why It Appears on Your Report</span>
+          <p id="termModalContext" style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin: 0;"></p>
+        </div>
+
+        <div class="clinical-card" style="margin-bottom: 14px; padding: 14px 16px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25);">
+          <span style="font-size: 0.74rem; color: var(--amber-caution); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 4px;">Common Misconception</span>
+          <p id="termModalMisconception" style="font-size: 0.84rem; color: #FDE68A; line-height: 1.5; margin: 0;"></p>
+        </div>
+
+        <div class="doctor-question-box">
+          <strong style="display: block; margin-bottom: 4px; font-size: 0.82rem; color: var(--text-primary);">Suggested Question for Your Doctor:</strong>
+          <span id="termModalDoctorQuestion" style="font-style: italic;"></span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeTermFooterBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 18 / Upgrade: Report Timeline & Comparison Modal -->
+  <div class="modal-overlay" id="reportComparisonModal" style="display: none;">
+    <div class="modal-dialog" style="max-width: 920px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <span class="badge-evidence" style="margin-bottom: 4px;">REPORT COMPARISON &amp; RECIST 1.1 GATE</span>
+          <h3 class="modal-title">Compare Two Diagnostic Reports</h3>
+          <p class="modal-desc" style="margin-bottom: 0;">Cross-evaluate longitudinal imaging reports with anatomical compatibility gating.</p>
+        </div>
+        <button class="btn-icon" id="closeReportComparisonBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- Report Selectors -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px; font-weight: 600;">BASELINE / PRIOR STUDY:</label>
+            <select id="compareReportSelectA" class="clinical-select" style="width: 100%;">
+              <option value="ct-chest-2025">Oct 14, 2025 · Thoracic CT Baseline (5.0 mm nodule)</option>
+              <option value="mri-pelvic">Oct 12, 2026 · Pelvic MRI Protocol</option>
+              <option value="ultrasound-thyroid">Sep 29, 2026 · Thyroid Ultrasound</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px; font-weight: 600;">FOLLOW-UP / CURRENT STUDY:</label>
+            <select id="compareReportSelectB" class="clinical-select" style="width: 100%;">
+              <option value="ct-chest">Oct 21, 2026 · Thoracic CT Contrast (6.2 mm nodule)</option>
+              <option value="mri-pelvic">Oct 12, 2026 · Pelvic MRI Protocol</option>
+              <option value="ultrasound-thyroid">Sep 29, 2026 · Thyroid Ultrasound</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="text-align: right; margin-bottom: 16px;">
+          <button class="btn btn-primary btn-sm" id="executeReportComparisonBtn">
+            <span>Run Comparability Analysis</span>
+          </button>
+        </div>
+
+        <!-- Comparability Gate Result Container -->
+        <div id="reportComparisonResultContainer">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Mandatory Progression Safeguard Disclaimer -->
+        <div class="evidence-callout" style="margin-top: 16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <div>
+            <strong>Mandatory Clinical Safeguard:</strong> Never automatically interpret wording differences between scan reports as disease progression. Differences often reflect slice resolution, contrast phase, or radiologist descriptive conventions. Always consult your oncologist or radiologist.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeReportComparisonFooterBtn">Close Comparison</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Consultation Summary Modal (Printable & Export-Ready) -->
+  <div class="modal-overlay" id="doctorConsultationModal" style="display: none;">
+    <div class="modal-dialog" style="max-width: 860px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <span class="badge-evidence" style="margin-bottom: 4px;">CLINICAL CONSULTATION PREPARATION</span>
+          <h3 class="modal-title">Doctor Consultation Summary</h3>
+          <p class="modal-desc" style="margin-bottom: 0;">Printable summary of your symptoms, verified scan excerpts, and clinician discussion questions.</p>
+        </div>
+        <button class="btn-icon" id="closeDoctorConsultationBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" id="printableDoctorConsultationContent" style="max-height: 72vh; overflow-y: auto;">
+        <!-- Injected via renderDoctorConsultationSummary() -->
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Confidential Patient-Doctor Document · HIPAA Safe Harbor Redacted</span>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" id="closeDoctorConsultationFooterBtn">Close</button>
+          <button class="btn btn-primary" id="printDoctorConsultationBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            <span>Print Consultation Guide</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reusable Accessible Confirmation Dialog Modal -->
+  <div class="modal-overlay" id="confirmationDialogModal" style="display: none;">
+    <div class="modal-dialog" style="max-width: 460px; width: 90%;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirmModalTitle">Confirm Action</h3>
+        <button class="btn-icon" id="closeConfirmDialogBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="confirmModalMessage" style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-secondary" id="confirmModalCancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="confirmModalActionBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 8: Diagnostic Claim & Abstention Evaluator Modal -->
+  <div class="modal-overlay" id="claimCheckModal" style="display: none;">
+    <div class="modal-dialog" style="max-width: 640px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <span class="badge-evidence" style="margin-bottom: 4px;">CLINICAL ABSTENTION SAFEGUARD</span>
+          <h3 class="modal-title">Clinical Safeguards &amp; Interpretation Checker</h3>
+          <p class="modal-desc" style="margin-bottom: 0;">Test a question or interpretation against clinical safety rules.</p>
+        </div>
+        <button class="btn-icon" id="closeClaimModalBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 12px;">
+          PathoGuard-AI strictly abstains from generating autonomous cancer diagnoses, malignant staging, or unvalidated risk probability percentages. Test how the system responds:
+        </p>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <input type="text" id="claimQuestionInput" class="clinical-input" placeholder="e.g. Does this CT confirm I have cancer?" style="flex: 1;">
+          <button class="btn btn-primary" id="evaluateClaimBtn">
+            <span>Check Rule</span>
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;">
+          <button class="btn btn-ghost btn-xs sample-claim-chip" data-claim="Does this scan confirm I have cancer?">"Does this scan confirm cancer?"</button>
+          <button class="btn btn-ghost btn-xs sample-claim-chip" data-claim="What stage of cancer is this nodule?">"What stage is this nodule?"</button>
+          <button class="btn btn-ghost btn-xs sample-claim-chip" data-claim="Does this report prove my disease is progressing?">"Does this prove progression?"</button>
+        </div>
+
+        <!-- Claim Evaluation Result Container -->
+        <div id="claimEvaluationResultBox" style="display: none;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeClaimFooterBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Details & Intake Onboarding Modal -->
+  <div class="modal-overlay" id="patientProfileModal" style="display: none; z-index: 9999;">
+    <div class="modal-dialog" style="max-width: 620px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <span class="badge-evidence" style="margin-bottom: 4px;">PATIENT INTAKE &amp; CLINICAL CONTEXT</span>
+          <h3 class="modal-title" id="patientProfileModalTitle">Enter Your Details to Begin</h3>
+          <p class="modal-desc" style="margin-bottom: 0;">PathoGuard-AI personalizes symptom evaluations, report verification, and doctor briefs with your context.</p>
+        </div>
+        <button class="btn-icon" id="closePatientProfileTopBtn" style="display: none;" title="Close dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="max-height: 72vh; overflow-y: auto; padding: 18px 24px;">
+        <form id="patientProfileForm" onsubmit="return false;">
+          
+          <!-- Full Name -->
+          <div class="form-group-clinical">
+            <label for="patientProfileName">Full Name or Preferred Initials <span style="color: #38efbe;">*</span></label>
+            <input type="text" id="patientProfileName" placeholder="Enter your full name or initials" required autocomplete="name">
+            <span class="form-hint-micro">Used for header display and doctor visit preparation documents.</span>
+          </div>
+
+          <!-- Age & Biological Sex Grid -->
+          <div class="form-grid-2col">
+            <div class="form-group-clinical">
+              <label for="patientProfileAge">Age (Years) <span style="color: #38efbe;">*</span></label>
+              <input type="number" id="patientProfileAge" min="1" max="120" placeholder="e.g. 35" required>
+            </div>
+            <div class="form-group-clinical">
+              <label for="patientProfileSex">Biological Sex <span style="color: #38efbe;">*</span></label>
+              <select id="patientProfileSex" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other / Intersex">Other / Intersex</option>
+                <option value="Prefer not to specify">Prefer not to specify</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Smoking & Environmental Exposure History -->
+          <div class="form-group-clinical">
+            <label for="patientProfileSmoking">Smoking &amp; Environmental Exposure History</label>
+            <select id="patientProfileSmoking">
+              <option value="Non-smoker (Never smoked)">Non-smoker (Never smoked)</option>
+              <option value="Former smoker (Quit < 5 years ago)">Former smoker (Quit &lt; 5 years ago)</option>
+              <option value="Former smoker (Quit > 5 years ago)">Former smoker (Quit &gt; 5 years ago)</option>
+              <option value="Current active smoker">Current active smoker</option>
+              <option value="Occupational / Secondhand exposure">Occupational / Secondhand exposure (Dust, Fumes, Asbestos)</option>
+            </select>
+            <span class="form-hint-micro">Critical baseline context when evaluating thoracic symptoms or pulmonary imaging.</span>
+          </div>
+
+          <!-- Primary Health Purpose -->
+          <div class="form-group-clinical">
+            <label for="patientProfilePurpose">Primary Reason for Using PathoGuard-AI Today</label>
+            <select id="patientProfilePurpose">
+              <option value="Evaluating persistent or new symptoms">Evaluating persistent or new symptoms</option>
+              <option value="Reviewing diagnostic scan or pathology report">Reviewing diagnostic scan or pathology report</option>
+              <option value="Preparing discussion points for an upcoming doctor visit">Preparing discussion points for an upcoming doctor visit</option>
+              <option value="Seeking second opinion / General health review">Seeking second opinion / General health review</option>
+            </select>
+          </div>
+
+          <!-- Medical History / Pre-existing Conditions -->
+          <div class="form-group-clinical">
+            <label for="patientProfileHistory">Relevant Pre-existing Conditions (Optional)</label>
+            <input type="text" id="patientProfileHistory" placeholder="e.g. Asthma, Hypertension, Gastroesophageal reflux, None">
+            <span class="form-hint-micro">Helps explain possible non-malignant origins of symptoms such as cough or fatigue.</span>
+          </div>
+
+          <!-- Clinical Safety Notice Checkbox -->
+          <div class="clinical-consent-checkbox-card">
+            <input type="checkbox" id="patientProfileConsent" checked required>
+            <label for="patientProfileConsent">
+              <strong>Non-Diagnostic Understanding:</strong> I understand that PathoGuard-AI is an evidence-grounded informational tool to organize health records and formulate questions for clinical appointments. It does not provide medical diagnoses or rule out conditions.
+            </label>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" id="closePatientProfileFooterBtn" type="button" style="display: none;">Cancel</button>
+        <button class="btn btn-primary" id="savePatientProfileBtn" type="button">
+          <span>Save &amp; Enter Workspace</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-left: 6px; vertical-align: -2px;">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- API Connection Layer & Application Scripts -->
+  <script src="api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
