@@ -9,10 +9,10 @@ import re
 
 # Keywords indicating user or interpreter might be leaping to an unverified cancer conclusion
 DIAGNOSTIC_CLAIM_PATTERNS = [
-    r"\b(?:is it|does this mean|confirm|rule out|have|diagnose)\s+(?:cancer|malignancy|tumor|carcinoma|lymphoma)\b",
-    r"\b(?:what stage|stage [1-4]|metastasis|terminal)\b",
-    r"\b(?:is it malignant|benign or malignant)\b",
-    r"\b(?:percentage risk|probability of cancer|cancer percentage)\b"
+    r"\b(?:is it|does this mean|confirm|rule out|have|diagnose|tell me if|indicate)\b.*?\b(?:cancer|malignancy|malignant|tumor|carcinoma|lymphoma)\b",
+    r"\b(?:what stage|stage [1-4]|metastasis|metastatic|terminal)\b",
+    r"\b(?:is it malignant|benign or malignant|is this cancer)\b",
+    r"\b(?:percentage risk|probability of cancer|cancer percentage|risk of cancer|chance of cancer)\b"
 ]
 
 
