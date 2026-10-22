@@ -39,6 +39,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"^https:\/\/.*\.onrender\.com$",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -103,7 +104,11 @@ if os.path.exists(frontend_dir):
 
 # Root endpoint — confirms backend is running
 @app.get("/")
-def read_root():
+def read_root(request: Request):
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and "application/json" not in accept:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/app/")
     return {
         "platform": settings.PROJECT_NAME,
         "status": "Operational",

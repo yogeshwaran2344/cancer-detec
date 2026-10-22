@@ -9,7 +9,17 @@
 (function () {
   'use strict';
 
-  const DEFAULT_BACKEND_URL = 'http://127.0.0.1:8000';
+  const getInitialBackendUrl = () => {
+    if (typeof window !== 'undefined' && window.location && window.location.origin) {
+      const origin = window.location.origin;
+      // If running on a cloud host (like Render, Railway, etc.) or same-origin deployment
+      if (!origin.startsWith('file:') && !origin.includes(':5500') && !origin.includes(':3000')) {
+        return origin;
+      }
+    }
+    return 'http://127.0.0.1:8000';
+  };
+  const DEFAULT_BACKEND_URL = getInitialBackendUrl();
   const STORAGE_KEY_BASE_URL = 'pathoguard_backend_url';
 
   class PathoGuardApiClient {

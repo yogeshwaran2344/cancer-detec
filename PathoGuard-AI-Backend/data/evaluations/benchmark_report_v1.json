@@ -1,7 +1,7 @@
 {
   "evaluation_title": "PathoGuard-AI Reliability & Evaluation Benchmark Report",
   "benchmark_dataset_version": "1.0.0",
-  "evaluated_at": "2026-10-22T17:23:07.206273",
+  "evaluated_at": "2026-10-22T18:01:34.547721",
   "total_cases_evaluated": 20,
   "deterministic_consistency_pct": 100.0,
   "adaptive_engine_metrics": {
