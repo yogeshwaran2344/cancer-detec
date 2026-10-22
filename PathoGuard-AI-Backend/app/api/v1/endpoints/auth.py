@@ -2,7 +2,8 @@
 Authentication & Session Endpoints
 Provides cryptographic session tokens and verification for patient record isolation.
 """
-
+from __future__ import annotations
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 import uuid
@@ -41,9 +42,6 @@ class SessionVerifyResponse(BaseModel):
     auth_method: str
     expires_at: int
     status: str = "valid"
-
-
-from typing import Optional
 
 
 @router.post("/session", response_model=SessionResponse)
