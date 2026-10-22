@@ -1,0 +1,9 @@
+# PathoGuard-AI Production Dependencies (Root for Render / Cloud Deployments)
+fastapi==0.156.8
+uvicorn==0.54.0
+python-multipart==0.0.32
+pydantic==2.14.1
+pydantic-settings==2.16.1
+python-dotenv==1.2.4
+pypdf==6.21.1
+pillow==13.0.0
