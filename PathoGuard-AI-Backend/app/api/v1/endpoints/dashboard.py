@@ -3,13 +3,15 @@ Dashboard Summary Endpoint
 Returns consolidated metrics and recent clinical assessments for the frontend workspace.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from typing import Optional
 import datetime
 from app.schemas.dashboard import (
     DashboardSummaryResponse,
     DashboardMetrics,
     RecentAssessmentSummary
 )
+from app.core.auth import get_optional_authenticated_user, AuthenticatedUser
 from app.db.repository import list_assessment_records
 from app.db.database import get_db
 
@@ -18,9 +20,12 @@ router = APIRouter()
 
 @router.get("", response_model=DashboardSummaryResponse)
 @router.get("/", response_model=DashboardSummaryResponse)
-def get_dashboard_summary() -> DashboardSummaryResponse:
-    """Consolidates key metrics and recent assessment activity from SQLite for the user's workspace."""
-    total_count, assessments_list = list_assessment_records(limit=10)
+def get_dashboard_summary(
+    current_user: Optional[AuthenticatedUser] = Depends(get_optional_authenticated_user)
+) -> DashboardSummaryResponse:
+    """Consolidates key metrics and recent assessment activity from SQLite for the caller's workspace."""
+    eff_user_id = current_user.user_id if current_user else None
+    total_count, assessments_list = list_assessment_records(user_id=eff_user_id, limit=10)
     recent_items = []
 
     for item in assessments_list[:5]:

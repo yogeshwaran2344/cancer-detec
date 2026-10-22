@@ -129,8 +129,9 @@ class ClinicalSafetyEvaluation:
     clinical_guidance: List[str] = field(default_factory=list)
     evaluation_summary: str = ""
     disclaimer: str = (
-        "Clinical safety evaluation is a structured decision-support screening aid. "
-        "It does not replace emergency medical triage or professional physician diagnosis."
+        "CRITICAL CLINICAL NOTICE: PathoGuard-AI is an informational decision-support tool. "
+        "It DOES NOT diagnose cancer, DOES NOT rule out malignancy, and DOES NOT calculate quantitative risk scores. "
+        "Always consult a qualified physician for clinical evaluation."
     )
 
 

@@ -39,16 +39,15 @@ router = APIRouter()
 @router.post("/", response_model=AssessmentResponse)
 def create_assessment(
     payload: AssessmentCreate,
-    user_id: Optional[str] = Query("anonymous_local_user", description="Local user identifier"),
     current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
 ) -> AssessmentResponse:
     """
     Intake patient symptoms, reconcile against linked scan reports (if available),
     and persist in SQLite without automated percentage risk scoring.
-    Includes duplicate submission prevention (idempotency within 15 seconds)
-    and context-aware negation & clinical safety triage.
+    Includes duplicate submission prevention (idempotency within 15 seconds),
+    cryptographic user identity enforcement, and context-aware clinical safety triage.
     """
-    effective_user_id = current_user.user_id if current_user.is_authenticated else (user_id or "anonymous_local_user")
+    effective_user_id = current_user.user_id
 
     # Duplicate submission prevention (Idempotency)
     existing_dup = find_recent_duplicate_assessment(
@@ -209,15 +208,15 @@ def create_assessment(
 def get_assessment_history(
     assessment_type: Optional[str] = Query(None, description="Filter by assessment type"),
     search: Optional[str] = Query(None, description="Search keyword in summary or ID"),
-    user_id: Optional[str] = Query(None, description="Filter by user ownership"),
     limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0)
+    offset: int = Query(0, ge=0),
+    current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
 ) -> AssessmentHistoryResponse:
-    """Retrieves previous clinical assessments from SQLite with search, filters, and pagination."""
+    """Retrieves previous clinical assessments belonging to the authenticated caller from SQLite."""
     total_count, records = list_assessment_records(
         assessment_type=assessment_type,
         search=search,
-        user_id=user_id,
+        user_id=current_user.user_id,
         limit=limit,
         offset=offset
     )
@@ -233,17 +232,15 @@ def get_assessment_history(
 def compare_two_assessments(
     id1: str = Query(..., description="First assessment ID to compare"),
     id2: str = Query(..., description="Second assessment ID to compare"),
-    user_id: Optional[str] = Query(None, description="User ownership verification"),
     current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
 ) -> Dict[str, Any]:
     """
-    Compares two previous assessments side by side.
+    Compares two previous assessments side by side with caller ownership enforcement.
     CRITICAL RULE:
     Highlights: 'Do not interpret wording differences between reports as confirmed disease progression.'
     """
-    eff_user = current_user.user_id if current_user.is_authenticated else user_id
     try:
-        comparison_result = compare_assessment_records(id1, id2, user_id=eff_user)
+        comparison_result = compare_assessment_records(id1, id2, user_id=current_user.user_id)
         return comparison_result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -252,12 +249,10 @@ def compare_two_assessments(
 @router.get("/{assessment_id}", response_model=AssessmentResponse)
 def get_assessment_by_id(
     assessment_id: str,
-    user_id: Optional[str] = Query(None, description="User ownership verification"),
     current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
 ) -> AssessmentResponse:
     """Retrieve full details of an assessment by its ID from SQLite with server-side ownership enforcement."""
-    eff_user = current_user.user_id if current_user.is_authenticated else user_id
-    stored = get_assessment_record(assessment_id, user_id=eff_user)
+    stored = get_assessment_record(assessment_id, user_id=current_user.user_id)
     if not stored:
         raise HTTPException(status_code=404, detail=f"Assessment '{assessment_id}' not found or access unauthorized.")
 
@@ -276,12 +271,10 @@ def get_assessment_by_id(
 @router.delete("/{assessment_id}")
 def delete_assessment(
     assessment_id: str,
-    user_id: Optional[str] = Query(None, description="User ownership verification"),
     current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
 ):
     """Safely deletes an assessment from SQLite with server-side ownership authorization."""
-    eff_user = current_user.user_id if current_user.is_authenticated else user_id
-    success = delete_assessment_record(assessment_id, user_id=eff_user)
+    success = delete_assessment_record(assessment_id, user_id=current_user.user_id)
     if not success:
         raise HTTPException(status_code=404, detail=f"Assessment '{assessment_id}' not found or deletion unauthorized.")
     return {
@@ -294,10 +287,10 @@ def delete_assessment(
 @router.delete("")
 @router.delete("/")
 def purge_all_assessments(
-    user_id: Optional[str] = Query("anonymous_local_user", description="User ID whose data to purge")
+    current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
 ):
-    """Purges all assessments and reports for the local user in compliance with retention policy."""
-    purged_count = purge_user_records(user_id=user_id)
+    """Purges all assessments and reports for the authenticated user in compliance with retention policy."""
+    purged_count = purge_user_records(user_id=current_user.user_id)
     return {
         "status": "success",
         "purged_records_count": purged_count,

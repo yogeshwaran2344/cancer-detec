@@ -1,22 +1,42 @@
 """
 Application Configuration and Security Settings
-Loads settings from environment variables and .env file using pydantic-settings.
+Loads settings from environment variables and optional .env file using pydantic-settings.
 """
 
-from typing import List, Union
-from pydantic import field_validator
+from typing import List, Union, Any
+from pydantic import field_validator, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import json
 import os
+import secrets
+
+
+def get_default_secret_key() -> str:
+    """
+    Returns configured secret key from environment or generates a secure random 256-bit key.
+    Never uses hardcoded or insecure fallback strings.
+    """
+    return os.environ.get("PATHOGUARD_SECRET_KEY") or os.environ.get("SECRET_KEY") or secrets.token_urlsafe(32)
 
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "PathoGuard Clinical Intelligence API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
-    ENVIRONMENT: str = "development"
-    DEBUG: bool = True
-    SECRET_KEY: str = "pathoguard_dev_secret_key_insecure_for_production"
+    ENVIRONMENT: str = "production"
+    DEBUG: bool = False
+    SECRET_KEY: str = Field(default_factory=get_default_secret_key)
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def resolve_debug(cls, v: Any, info) -> bool:
+        if isinstance(v, str):
+            return v.lower() in ("true", "1", "yes")
+        return bool(v)
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.lower() in ("production", "prod")
 
     # Database connection string (PostgreSQL for prod, defaults to None for SQLite)
     DATABASE_URL: Union[str, None] = None

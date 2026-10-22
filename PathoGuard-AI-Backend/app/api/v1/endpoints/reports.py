@@ -1,14 +1,16 @@
 """
 Scan Report Upload, Digital Extraction, OCR & Verification Endpoints
+Enforces server-side authentication, caller record ownership, and robust validation.
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.responses import FileResponse
 from typing import List, Optional
 import datetime
 import uuid
 import os
 
+from app.core.auth import get_current_authenticated_user, AuthenticatedUser
 from app.services.file_manager import (
     save_to_sandbox,
     get_sandbox_file_path,
@@ -35,15 +37,22 @@ router = APIRouter()
 @router.post("", response_model=ReportUploadResponse)
 @router.post("/", response_model=ReportUploadResponse)
 @router.post("/upload", response_model=ReportUploadResponse)
-async def upload_scan_report(file: UploadFile = File(...)) -> ReportUploadResponse:
+async def upload_scan_report(
+    file: UploadFile = File(...),
+    current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
+) -> ReportUploadResponse:
     """
     Step 1 & Step 2 & Step 3:
     Securely receives a diagnostic scan report (PDF, PNG, JPG, JPEG, TXT), validates format/size,
-    stores in private local sandbox, runs digital PDF extraction or optical OCR,
-    segments into clinical sections, and attaches page-linked passage anchors.
+    stores in private local sandbox, runs digital PDF extraction or genuine OCR,
+    segments into clinical sections, and attaches page-linked passage anchors with caller ownership.
     """
     raw_filename = file.filename or "unknown_report.pdf"
     content = await file.read()
+
+    # Reject empty files immediately
+    if not content or len(content.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty (0 bytes). Please upload a valid report.")
 
     # 1. Validate and save to sandbox
     saved_meta = save_to_sandbox(raw_filename, content, file.content_type)
@@ -103,23 +112,23 @@ async def upload_scan_report(file: UploadFile = File(...)) -> ReportUploadRespon
         content_type=saved_meta["content_type"],
         pages_count=extracted.get("pages_count", 1),
         extraction_method=extracted.get("extraction_method", "Digital PDF Parser"),
-        confidence=extracted.get("confidence", 95.0),
+        confidence=extracted.get("confidence", 0.0),
         raw_text=extracted.get("raw_text", ""),
         sections=extracted.get("sections", {}),
         findings=typed_findings,
         passages=passages,
         extraction_errors=extraction_errors,
-        processing_status="needs_review",
+        processing_status=extracted.get("processing_status", "needs_review"),
         is_verified=False,
-        message="Report extracted in local privacy sandbox. Needs user verification before assessment use.",
+        message="Report extracted in local sandbox. Needs user verification before assessment use." if extracted.get("processing_status") != "failed" else "Extraction notice: No readable report text found.",
         disclaimer="Verified indicates text review by user; not clinical validation."
     )
 
-    # Persist report to SQLite database
+    # Persist report to SQLite database with authenticated user ownership
     report_record = response_payload.model_dump()
     report_record["sanitized_filename"] = saved_meta["sanitized_filename"]
     report_record["saved_path"] = saved_meta["saved_path"]
-    save_report_record(report_record)
+    save_report_record(report_record, user_id=current_user.user_id)
 
     return response_payload
 
@@ -128,17 +137,18 @@ async def upload_scan_report(file: UploadFile = File(...)) -> ReportUploadRespon
 @router.post("/{report_id}/verify", response_model=ReportVerificationResponse)
 def verify_report_findings(
     update: ReportVerificationRequest,
-    report_id: Optional[str] = None
+    report_id: Optional[str] = None,
+    current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
 ) -> ReportVerificationResponse:
     """
     Step 4 & Step 6:
-    Allows user to review, edit and confirm extracted report text & findings.
+    Allows authenticated user to review, edit and confirm extracted report text & findings.
     Marks processing status as 'verified' in persistent SQLite storage.
     """
     target_id = report_id or update.report_id
-    report = get_report_record(target_id)
+    report = get_report_record(target_id, user_id=current_user.user_id)
     if not report:
-        raise HTTPException(status_code=404, detail=f"Report '{target_id}' not found in database.")
+        raise HTTPException(status_code=404, detail=f"Report '{target_id}' not found or access unauthorized.")
 
     # Update findings with verified state
     verified_list = []
@@ -173,20 +183,26 @@ def verify_report_findings(
 
 
 @router.get("/{report_id}", response_model=ReportUploadResponse)
-def get_report_details(report_id: str) -> ReportUploadResponse:
-    """Retrieves extracted document sections, findings, errors, and verification status from SQLite."""
-    report = get_report_record(report_id)
+def get_report_details(
+    report_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
+) -> ReportUploadResponse:
+    """Retrieves extracted document sections, findings, errors, and verification status from SQLite with caller ownership check."""
+    report = get_report_record(report_id, user_id=current_user.user_id)
     if not report:
-        raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found in database.")
+        raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found or access unauthorized.")
     return ReportUploadResponse(**report)
 
 
 @router.get("/{report_id}/file")
-def get_original_report_file(report_id: str):
-    """Serves the original document safely from sandbox for side-by-side inspection."""
-    report = get_report_record(report_id)
+def get_original_report_file(
+    report_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
+):
+    """Serves the original document safely from sandbox for side-by-side inspection with caller ownership check."""
+    report = get_report_record(report_id, user_id=current_user.user_id)
     if not report:
-        raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found.")
+        raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found or access unauthorized.")
 
     saved_path = report.get("saved_path")
     if not saved_path or not os.path.exists(saved_path):
@@ -200,11 +216,14 @@ def get_original_report_file(report_id: str):
 
 
 @router.delete("/{report_id}")
-def purge_report(report_id: str):
-    """Deletes uploaded document and parsed records from local sandbox."""
-    report = get_report_record(report_id)
+def purge_report(
+    report_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_authenticated_user)
+):
+    """Deletes uploaded document and parsed records from local sandbox with caller ownership check."""
+    report = get_report_record(report_id, user_id=current_user.user_id)
     if not report:
-        raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found.")
+        raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found or access unauthorized.")
 
     saved_path = report.get("saved_path")
     if saved_path and os.path.exists(saved_path):

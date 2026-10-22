@@ -27,27 +27,33 @@ def log_test(name, passed, detail=""):
     if not passed:
         raise AssertionError(f"Test failed: {name} - {detail}")
 
-def test_get(endpoint):
+def test_get(endpoint, headers=None):
     url = f"{BASE_URL}{endpoint}"
-    req = urllib.request.Request(url, headers={"User-Agent": "PathoGuard-Tester"})
+    req_headers = {"User-Agent": "PathoGuard-Tester"}
+    if headers:
+        req_headers.update(headers)
+    req = urllib.request.Request(url, headers=req_headers)
     with urllib.request.urlopen(req) as resp:
         assert resp.status == 200, f"Expected 200, got {resp.status}"
         data = json.loads(resp.read().decode())
         return data
 
-def test_post_json(endpoint, payload):
+def test_post_json(endpoint, payload, headers=None):
     url = f"{BASE_URL}{endpoint}"
     data_bytes = json.dumps(payload).encode("utf-8")
+    req_headers = {"Content-Type": "application/json", "User-Agent": "PathoGuard-Tester"}
+    if headers:
+        req_headers.update(headers)
     req = urllib.request.Request(
         url,
         data=data_bytes,
-        headers={"Content-Type": "application/json", "User-Agent": "PathoGuard-Tester"}
+        headers=req_headers
     )
     with urllib.request.urlopen(req) as resp:
         assert resp.status == 200, f"Expected 200, got {resp.status}"
         return json.loads(resp.read().decode())
 
-def test_multipart_upload(endpoint, filename, content_bytes, content_type="text/plain"):
+def test_multipart_upload(endpoint, filename, content_bytes, content_type="text/plain", headers=None):
     url = f"{BASE_URL}{endpoint}"
     boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
     
@@ -59,13 +65,16 @@ def test_multipart_upload(endpoint, filename, content_bytes, content_type="text/
     body.write(f"\r\n--{boundary}--\r\n".encode())
     
     data = body.getvalue()
+    req_headers = {
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+        "User-Agent": "PathoGuard-Tester"
+    }
+    if headers:
+        req_headers.update(headers)
     req = urllib.request.Request(
         url,
         data=data,
-        headers={
-            "Content-Type": f"multipart/form-data; boundary={boundary}",
-            "User-Agent": "PathoGuard-Tester"
-        }
+        headers=req_headers
     )
     with urllib.request.urlopen(req) as resp:
         assert resp.status == 200, f"Expected 200, got {resp.status}"
@@ -109,6 +118,16 @@ def run_all_tests():
     except Exception as e:
         log_test("GET /api/v1/dashboard (Dashboard metrics & summaries)", False, str(e))
 
+    # 4b. Authenticate Session
+    auth_headers = {}
+    try:
+        sess_data = test_post_json("/api/v1/auth/session", {"user_id": "test_api_runner"})
+        token = sess_data.get("token")
+        auth_headers = {"Authorization": f"Bearer {token}"}
+        log_test("POST /api/v1/auth/session (Acquire session token)", bool(token), f"Token acquired for user test_api_runner")
+    except Exception as e:
+        log_test("POST /api/v1/auth/session (Acquire session token)", False, str(e))
+
     # 5. Report Upload & Parsing
     sample_report_text = (
         "EXAMINATION: CHEST RADIOGRAPH (2-VIEWS PA AND LATERAL)\n\n"
@@ -131,7 +150,8 @@ def run_all_tests():
             "/api/v1/reports",
             "sample_chest_cxr.txt",
             sample_report_text.encode("utf-8"),
-            "text/plain"
+            "text/plain",
+            headers=auth_headers
         )
         uploaded_report_id = data.get("report_id")
         has_findings = len(data.get("findings", [])) >= 3
@@ -159,8 +179,8 @@ def run_all_tests():
                 ],
                 "notes": "Verified by patient review."
             }
-            v_data = test_post_json("/api/v1/reports/verify", verify_payload)
-            log_test("POST /api/v1/reports/verify (Report verification step)", v_data.get("is_verified") is True)
+            v_data = test_post_json(f"/api/v1/reports/{uploaded_report_id}/verify", verify_payload, headers=auth_headers)
+            log_test("POST /api/v1/reports/verify (Report verification step)", v_data.get("processing_status") == "verified" or v_data.get("is_verified") is True)
         except Exception as e:
             log_test("POST /api/v1/reports/verify (Report verification step)", False, str(e))
 
@@ -176,7 +196,7 @@ def run_all_tests():
             "patient_note": "Cough worse at night.",
             "associated_report_id": uploaded_report_id
         }
-        asm_data = test_post_json("/api/v1/assessments", assessment_payload)
+        asm_data = test_post_json("/api/v1/assessments", assessment_payload, headers=auth_headers)
         is_neutral = asm_data.get("status") == "Assessment summary ready"
         has_steps = len(asm_data.get("suggested_next_steps", [])) > 0
         log_test(
@@ -189,7 +209,7 @@ def run_all_tests():
 
     # 8. Get Assessment History
     try:
-        hist_data = test_get("/api/v1/assessments")
+        hist_data = test_get("/api/v1/assessments", headers=auth_headers)
         log_test(
             "GET /api/v1/assessments (Assessment history list)",
             hist_data.get("total_count", 0) >= 1,
@@ -202,7 +222,7 @@ def run_all_tests():
     try:
         url = f"{BASE_URL}/api/v1/reports"
         try:
-            test_multipart_upload("/api/v1/reports", "script.exe", b"malicious binary", "application/octet-stream")
+            test_multipart_upload("/api/v1/reports", "script.exe", b"malicious binary", "application/octet-stream", headers=auth_headers)
             log_test("POST /api/v1/reports (Reject unsupported format)", False, "Failed to reject .exe")
         except urllib.error.HTTPError as he:
             log_test("POST /api/v1/reports (Reject unsupported format)", he.code == 400, f"Correctly returned HTTP {he.code}")

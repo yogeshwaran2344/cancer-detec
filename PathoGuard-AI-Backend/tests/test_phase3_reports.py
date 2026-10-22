@@ -1,7 +1,7 @@
 """
 Phase 3 Test Suite — Scan Report Processing & Verification
-Tests digital PDF extraction, optical image analysis, section classification,
-error tracking, file validation, and the user verification workflow.
+Tests digital PDF extraction, genuine text parsing, error tracking, file validation,
+and the user verification workflow with cryptographic session authentication.
 """
 
 import sys
@@ -26,7 +26,7 @@ def log_test(name, passed, detail=""):
     if not passed:
         raise AssertionError(f"Test failed: {name} - {detail}")
 
-def post_multipart(endpoint, filename, content_bytes, content_type="application/octet-stream"):
+def post_multipart(endpoint, filename, content_bytes, content_type="application/octet-stream", token=None):
     url = f"{BASE_URL}{endpoint}"
     boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
     
@@ -37,47 +37,43 @@ def post_multipart(endpoint, filename, content_bytes, content_type="application/
     body.write(content_bytes)
     body.write(f"\r\n--{boundary}--\r\n".encode())
     
-    req = urllib.request.Request(
-        url,
-        data=body.getvalue(),
-        headers={
-            "Content-Type": f"multipart/form-data; boundary={boundary}",
-            "User-Agent": "PathoGuard-Phase3-Tester"
-        }
-    )
+    headers = {
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+        "User-Agent": "PathoGuard-Phase3-Tester"
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    req = urllib.request.Request(url, data=body.getvalue(), headers=headers)
     with urllib.request.urlopen(req) as resp:
         return resp.status, json.loads(resp.read().decode())
 
-def post_json(endpoint, payload):
+def post_json(endpoint, payload, token=None):
     url = f"{BASE_URL}{endpoint}"
     data_bytes = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=data_bytes,
-        headers={"Content-Type": "application/json", "User-Agent": "PathoGuard-Phase3-Tester"}
-    )
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "PathoGuard-Phase3-Tester"
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    req = urllib.request.Request(url, data=data_bytes, headers=headers)
     with urllib.request.urlopen(req) as resp:
         return resp.status, json.loads(resp.read().decode())
 
-def get_json(endpoint):
+def get_json(endpoint, token=None):
     url = f"{BASE_URL}{endpoint}"
-    req = urllib.request.Request(url, headers={"User-Agent": "PathoGuard-Phase3-Tester"})
+    headers = {"User-Agent": "PathoGuard-Phase3-Tester"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req) as resp:
         return resp.status, json.loads(resp.read().decode())
 
 def create_synthetic_digital_pdf():
-    """Generates a valid digital PDF with embedded text using pypdf."""
-    from pypdf import PdfWriter
-    from pypdf.generic import DictionaryObject, NameObject, TextStringObject, ArrayObject, DecodedStreamObject
-
-    writer = PdfWriter()
-    # Add a blank page
-    page = writer.add_blank_page(width=612, height=792)
-    
-    # We can also generate a digital PDF with ReportLab if available, or write a standard synthetic text PDF stream
-    pdf_buffer = io.BytesIO()
-    
-    # Simple minimal valid PDF with a text stream
+    """Generates a valid digital PDF with genuine text layer."""
     pdf_content = (
         b"%PDF-1.4\n"
         b"1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj\n"
@@ -113,23 +109,42 @@ def create_synthetic_scan_image():
 def run_phase3_tests():
     print("\n================ PATHOGUARD-AI PHASE 3: SCAN REPORT TEST SUITE ================")
 
-    # 1. Digital PDF Upload & Text Extraction
+    # 0. Negative Test: Unauthenticated Upload Blocked (401)
+    status_unauth = 0
+    try:
+        post_multipart("/api/v1/reports", "test.pdf", b"%PDF-1.4...", "application/pdf")
+    except urllib.error.HTTPError as e:
+        status_unauth = e.code
+
+    log_test(
+        "Access Control: Unauthenticated Upload Blocked (401)",
+        status_unauth == 401,
+        "Protected report endpoint requires valid Bearer session token"
+    )
+
+    # 1. Obtain Authenticated Patient Session Token
+    sess_status, sess_data = post_json("/api/v1/auth/session", {"user_id": "test_patient_phase3"})
+    token = sess_data.get("token")
+    log_test("Patient Session Token Acquired", sess_status == 200 and bool(token), f"Token: {token[:16]}...")
+
+    # 2. Digital PDF Upload & Genuine Text Extraction
     pdf_bytes = create_synthetic_digital_pdf()
-    status, pdf_resp = post_multipart("/api/v1/reports", "synthetic_thoracic_ct.pdf", pdf_bytes, "application/pdf")
+    status, pdf_resp = post_multipart("/api/v1/reports", "synthetic_thoracic_ct.pdf", pdf_bytes, "application/pdf", token=token)
     
     report_id = pdf_resp.get("report_id")
-    has_findings = len(pdf_resp.get("findings", [])) >= 4
+    has_findings = len(pdf_resp.get("findings", [])) >= 3
     has_sections = bool(pdf_resp.get("sections", {}).get("findings"))
     is_needs_review = pdf_resp.get("processing_status") == "needs_review"
     is_unverified = pdf_resp.get("is_verified") is False
+    confidence_val = pdf_resp.get("confidence", 0)
 
     log_test(
-        "Digital PDF Upload & Extraction",
-        status == 200 and has_findings and has_sections and is_needs_review and is_unverified,
-        f"Report ID: {report_id}, Method: '{pdf_resp.get('extraction_method')}', Confidence: {pdf_resp.get('confidence')}%"
+        "Digital PDF Upload & Genuine Extraction",
+        status == 200 and has_findings and has_sections and is_needs_review and is_unverified and confidence_val > 50.0,
+        f"Report ID: {report_id}, Method: '{pdf_resp.get('extraction_method')}', Calibrated Confidence: {confidence_val}%"
     )
 
-    # 2. Section Classification & Passage Anchors
+    # 3. Section Structure Recognition (Technique, Findings, Impression, Recommendations)
     sections = pdf_resp.get("sections", {})
     has_technique = "technique" in sections and len(sections["technique"]) > 0
     has_findings_sec = "findings" in sections and len(sections["findings"]) > 0
@@ -142,18 +157,39 @@ def run_phase3_tests():
         f"Sections identified: {list(sections.keys())}"
     )
 
-    # 3. Image Optical Parsing & Error Tracking
+    # 4. Image Optical Parsing: Verified Abstention / No Invented Findings
     img_bytes = create_synthetic_scan_image()
-    status_img, img_resp = post_multipart("/api/v1/reports", "synthetic_mri_slice.png", img_bytes, "image/png")
+    status_img, img_resp = post_multipart("/api/v1/reports", "synthetic_mri_slice.png", img_bytes, "image/png", token=token)
     is_ocr_method = "Optical" in img_resp.get("extraction_method", "") or "OCR" in img_resp.get("extraction_method", "")
+    has_no_fake_findings = (img_resp.get("findings") == [] or all("invented" not in str(f).lower() for f in img_resp.get("findings", [])))
+    has_honest_status = img_resp.get("processing_status") in ["failed", "needs_review"]
     
     log_test(
-        "Optical Image Parsing & Character Recognition",
-        status_img == 200 and is_ocr_method and img_resp.get("confidence", 0) > 80,
-        f"Method: '{img_resp.get('extraction_method')}', Confidence: {img_resp.get('confidence')}%"
+        "Optical Image Parsing: No Invented Findings on Unindexed Scan",
+        status_img == 200 and is_ocr_method and has_no_fake_findings and has_honest_status,
+        f"Method: '{img_resp.get('extraction_method')}', Findings Count: {len(img_resp.get('findings', []))}"
     )
 
-    # 4. User Verification Workflow (Step 4 & Step 6)
+    # 4b. Scanned PDF Handling: Genuine OCR Execution & Zero Prewritten Findings
+    scanned_pdf_bytes = (
+        b"%PDF-1.4\n"
+        b"1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj\n"
+        b"2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj\n"
+        b"3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 612 792]>> endobj\n"
+        b"xref\n0 4\n0000000000 65535 f \n"
+        b"0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n"
+        b"trailer <</Size 4 /Root 1 0 R>>\nstartxref\n190\n%%EOF\n"
+    )
+    status_scan, scan_resp = post_multipart("/api/v1/reports", "scanned_doc_without_text.pdf", scanned_pdf_bytes, "application/pdf", token=token)
+    has_no_prewritten = len(scan_resp.get("findings", [])) == 0
+    is_failed_or_ocr = scan_resp.get("processing_status") in ["failed", "needs_review"]
+    log_test(
+        "Scanned PDF Handling: No Prewritten Findings Inserted When Text Missing",
+        status_scan == 200 and has_no_prewritten and is_failed_or_ocr,
+        f"Findings count: {len(scan_resp.get('findings', []))}, Method: '{scan_resp.get('extraction_method')}'"
+    )
+
+    # 5. User Verification Workflow (Step 4 & Step 6)
     if report_id:
         verify_payload = {
             "report_id": report_id,
@@ -173,7 +209,7 @@ def run_phase3_tests():
             ],
             "notes": "Reviewed and confirmed by patient without altering original document."
         }
-        v_status, v_resp = post_json(f"/api/v1/reports/{report_id}/verify", verify_payload)
+        v_status, v_resp = post_json(f"/api/v1/reports/{report_id}/verify", verify_payload, token=token)
         is_verified_status = v_resp.get("processing_status") == "verified" and v_resp.get("is_verified") is True
         has_disclaimer = "not clinical validation" in v_resp.get("disclaimer", "").lower()
 
@@ -183,25 +219,32 @@ def run_phase3_tests():
             f"Status: '{v_resp.get('processing_status')}', Disclaimer: '{v_resp.get('disclaimer')}'"
         )
 
-        # 5. Retrieve Verified Report Details
-        g_status, g_resp = get_json(f"/api/v1/reports/{report_id}")
+        # 6. Retrieve Verified Report Details
+        g_status, g_resp = get_json(f"/api/v1/reports/{report_id}", token=token)
         log_test(
             "Get Verified Report State",
             g_status == 200 and g_resp.get("is_verified") is True and g_resp.get("processing_status") == "verified",
-            f"Verified findings: {len(g_resp.get('findings', []))}"
+            f"Verified findings count: {len(g_resp.get('findings', []))}"
         )
 
-    # 6. File Validation Limits: Reject Unsupported File
+    # 7. File Validation Limits: Reject Empty File (0 Bytes -> 400)
     try:
-        post_multipart("/api/v1/reports", "malicious_script.bat", b"echo dangerous", "application/x-bat")
+        post_multipart("/api/v1/reports", "empty_report.pdf", b"", "application/pdf", token=token)
+        log_test("Reject Empty Document (0 Bytes -> 400)", False, "Failed to reject empty document")
+    except urllib.error.HTTPError as he:
+        log_test("Reject Empty Document (0 Bytes -> 400)", he.code == 400, f"Correctly returned HTTP {he.code}")
+
+    # 8. File Validation Limits: Reject Unsupported File (.bat -> 400)
+    try:
+        post_multipart("/api/v1/reports", "malicious_script.bat", b"echo dangerous", "application/x-bat", token=token)
         log_test("Reject Unsupported File Extension (.bat)", False, "Failed to reject")
     except urllib.error.HTTPError as he:
         log_test("Reject Unsupported File Extension (.bat)", he.code == 400, f"Correctly returned HTTP {he.code}")
 
-    # 7. File Validation Limits: Reject Oversized File (> 25MB)
+    # 9. File Validation Limits: Reject Oversized File (> 25MB -> 413)
     try:
         oversized_bytes = b"0" * (26 * 1024 * 1024) # 26 MB
-        post_multipart("/api/v1/reports", "large_file.pdf", oversized_bytes, "application/pdf")
+        post_multipart("/api/v1/reports", "large_file.pdf", oversized_bytes, "application/pdf", token=token)
         log_test("Reject Oversized File (> 25 MB)", False, "Failed to reject")
     except urllib.error.HTTPError as he:
         log_test("Reject Oversized File (> 25 MB)", he.code == 413, f"Correctly returned HTTP {he.code}")

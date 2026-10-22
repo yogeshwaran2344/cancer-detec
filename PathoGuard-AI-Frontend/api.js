@@ -96,6 +96,11 @@
      * Unified HTTP request wrapper with AbortController timeout & error classification
      */
     async request(endpoint, options = {}) {
+      // Automatically ensure session token is present for protected endpoints
+      if (!this.sessionToken && !endpoint.startsWith('/api/v1/auth') && !endpoint.includes('/health')) {
+        await this.ensureSession();
+      }
+
       const url = `${this.baseUrl}${endpoint}`;
       const timeout = options.timeout || this.timeoutMs;
       const controller = new AbortController();

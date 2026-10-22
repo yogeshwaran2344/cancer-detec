@@ -4,9 +4,10 @@ Provides section-by-section patient translations, medical terminology explanatio
 grounded evidence search, and abstention safeguards against unsupported conclusions.
 """
 
-from fastapi import APIRouter, HTTPException, Query, Path
+from fastapi import APIRouter, HTTPException, Query, Path, Depends
 from typing import Optional, Dict, Any
 
+from app.core.auth import get_optional_authenticated_user, AuthenticatedUser
 from app.db.repository import get_report_record
 from app.engine.report_explainer import ReportUnderstandingEngine
 from app.engine.terminology_explainer import explain_medical_term, CLINICAL_GLOSSARY
@@ -27,16 +28,20 @@ router = APIRouter()
 @router.post("/{report_id}/explain", response_model=ReportExplanationResponse)
 def get_report_ai_explanation(
     report_id: str = Path(..., description="Report ID stored in database"),
-    user_id: Optional[str] = Query(None, description="User ownership verification")
+    current_user: Optional[AuthenticatedUser] = Depends(get_optional_authenticated_user)
 ) -> ReportExplanationResponse:
     """
     Step 1 & Step 2:
     Generates grounded patient-friendly explanations for all findings and sections
     of a verified report, strictly linking explanations to original verbatim text passages.
     """
-    report = get_report_record(report_id, user_id=user_id)
+    report = get_report_record(report_id)
     if not report:
         raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found in database.")
+
+    if report.get("user_id") not in (None, "anonymous_local_user") and current_user:
+        if report.get("user_id") != current_user.user_id:
+            raise HTTPException(status_code=403, detail="Access unauthorized: Report belongs to another patient account.")
 
     explanation = ReportUnderstandingEngine.generate_full_explanation(report)
     return ReportExplanationResponse(**explanation)
@@ -46,16 +51,20 @@ def get_report_ai_explanation(
 def search_evidence_in_report(
     payload: EvidenceSearchRequest,
     report_id: str = Path(..., description="Report ID to search"),
-    user_id: Optional[str] = Query(None, description="User ownership verification")
+    current_user: Optional[AuthenticatedUser] = Depends(get_optional_authenticated_user)
 ) -> EvidenceSearchResponse:
     """
     Step 2 & Step 5:
     Searches report text for grounded passage anchors matching a user query.
     Enforces abstention if the query requests unsupported diagnostic conclusions.
     """
-    report = get_report_record(report_id, user_id=user_id)
+    report = get_report_record(report_id)
     if not report:
         raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found in database.")
+
+    if report.get("user_id") not in (None, "anonymous_local_user") and current_user:
+        if report.get("user_id") != current_user.user_id:
+            raise HTTPException(status_code=403, detail="Access unauthorized: Report belongs to another patient account.")
 
     search_result = ReportUnderstandingEngine.search_evidence(report, payload.query)
     return EvidenceSearchResponse(**search_result)

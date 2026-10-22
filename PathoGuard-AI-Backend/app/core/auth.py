@@ -81,36 +81,54 @@ def verify_session_token(token: str) -> Optional[Dict[str, Any]]:
 
 
 def get_current_authenticated_user(
-    authorization: Optional[str] = Header(None, description="Bearer session token"),
-    user_id: Optional[str] = Query(None, description="Fallback query identifier for local dev")
+    authorization: Optional[str] = Header(None, description="Bearer session token")
 ) -> AuthenticatedUser:
     """
     FastAPI dependency that extracts and validates the caller's server-side identity.
     Enforces that authorization headers provide authentic signed tokens.
+    Rejects caller-controlled query parameters as an identity grant.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Please obtain a signed session token via /api/v1/auth/session and provide 'Authorization: Bearer <token>' header."
+        )
+
+    raw_token = authorization.split("Bearer ", 1)[1].strip()
+    verified = verify_session_token(raw_token)
+    if not verified:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid, tampered, or expired session token. Please re-authenticate."
+        )
+
+    return AuthenticatedUser(
+        user_id=verified["uid"],
+        is_authenticated=True,
+        auth_method="signed_bearer_token",
+        issued_at=verified.get("iat", 0),
+        expires_at=verified.get("exp", 0)
+    )
+
+
+def get_optional_authenticated_user(
+    authorization: Optional[str] = Header(None, description="Bearer session token")
+) -> Optional[AuthenticatedUser]:
+    """
+    Optional authentication for endpoints that support both public metrics and user-filtered views.
     """
     if authorization and authorization.startswith("Bearer "):
         raw_token = authorization.split("Bearer ", 1)[1].strip()
         verified = verify_session_token(raw_token)
-        if not verified:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid, tampered, or expired session token. Please re-authenticate."
+        if verified:
+            return AuthenticatedUser(
+                user_id=verified["uid"],
+                is_authenticated=True,
+                auth_method="signed_bearer_token",
+                issued_at=verified.get("iat", 0),
+                expires_at=verified.get("exp", 0)
             )
-        return AuthenticatedUser(
-            user_id=verified["uid"],
-            is_authenticated=True,
-            auth_method="signed_bearer_token",
-            issued_at=verified.get("iat", 0),
-            expires_at=verified.get("exp", 0)
-        )
-    
-    # Fallback for dev / unauthenticated requests
-    eff_id = user_id or "anonymous_local_user"
-    return AuthenticatedUser(
-        user_id=eff_id,
-        is_authenticated=False,
-        auth_method="unauthenticated_client_param"
-    )
+    return None
 
 
 def assert_record_ownership(record_owner_id: str, user: AuthenticatedUser) -> None:

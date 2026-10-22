@@ -1,6 +1,6 @@
 # PathoGuard-AI — Reliability & Benchmarking Report
 **Version:** 1.0.0  
-**Evaluated At:** 2026-10-21T22:51:59.536224  
+**Evaluated At:** 2026-10-22T17:23:07.206273  
 **Total Synthetic Cases:** 20  
 **Deterministic Consistency:** 100.0%  
 

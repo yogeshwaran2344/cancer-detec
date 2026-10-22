@@ -1,27 +1,159 @@
 """
 PathoGuard-AI — Clinical Report Document Parser, OCR Engine & Section Classifier
-Provides local privacy-preserving digital PDF extraction, optical image parsing,
-section segmentation, passage anchor generation, and extraction error tracking.
+Provides local privacy-preserving digital PDF extraction, genuine text parsing,
+defensible extraction quality evaluation, section segmentation, and page-anchored findings.
+
+CRITICAL CLINICAL INTEGRITY RULE:
+Never generates synthetic, placeholder, or simulated clinical findings.
+If extraction fails or no text is detected, reports the failure honestly.
 """
 
 import io
 import re
+import shutil
+import subprocess
 from typing import Dict, Any, List, Optional
 import datetime
+
+COMMON_CLINICAL_TERMS = {
+    "examination", "technique", "findings", "impression", "recommendation", "recommendations",
+    "protocol", "contrast", "axial", "coronal", "sagittal", "computed", "tomography", "ct",
+    "mri", "magnetic", "resonance", "ultrasound", "radiograph", "x-ray", "imaging", "scan",
+    "nodule", "mass", "lesion", "density", "opacity", "infiltrate", "effusion", "consolidation",
+    "lymph", "nodes", "mediastinum", "pleural", "subpleural", "spiculated", "calcification",
+    "attenuation", "enhancement", "bilateral", "unremarkable", "normal", "intact", "without",
+    "evidence", "acute", "chronic", "mild", "moderate", "severe", "stable", "interval", "change",
+    "prior", "baseline", "study", "comparison", "patient", "clinical", "history", "indication",
+    "follow-up", "biopsy", "correlation", "correlate", "pulmonary", "thoracic", "pelvic", "hepatic",
+    "evaluation", "evaluated", "limits", "within", "demonstrates", "visualized", "observed"
+}
+
+
+def calculate_extraction_quality(raw_text: str, pages_data: List[Dict[str, Any]]) -> float:
+    """
+    Computes a defensible, multi-factor extraction quality assessment (0.0% to 100.0%)
+    based on character validity, lexical coherence, section presence, and page density.
+    Never returns hardcoded or invented values.
+    """
+    clean_text = raw_text.strip()
+    if not clean_text or len(clean_text) < 15:
+        return 0.0
+
+    # Factor 1: Character validity (ratio of standard alphanumeric & punctuation to total characters)
+    printable_chars = sum(1 for c in clean_text if c.isalnum() or c in ' .,;:()[]-/\n\r\t%"\'<>=+*#&')
+    char_validity = printable_chars / max(len(clean_text), 1)
+
+    # Factor 2: Lexical coherence (ratio of recognized English / clinical words)
+    words = re.findall(r'[a-zA-Z]{2,}', clean_text.lower())
+    if not words:
+        return 0.0
+
+    recognized_words = sum(1 for w in words if w in COMMON_CLINICAL_TERMS or len(w) >= 4)
+    lexical_ratio = recognized_words / max(len(words), 1)
+
+    # Factor 3: Clinical structure markers (presence of key diagnostic headings)
+    headings = ["TECHNIQUE", "EXAMINATION", "FINDINGS", "IMPRESSION", "RECOMMENDATION", "HISTORY", "INDICATION", "OBSERVATIONS"]
+    upper_text = clean_text.upper()
+    found_headings = sum(1 for h in headings if h in upper_text)
+    structural_score = min(found_headings / 3.0, 1.0)
+
+    # Factor 4: Density & completeness across pages
+    total_chars = sum(p.get("char_count", len(p.get("text", ""))) for p in pages_data) if pages_data else len(clean_text)
+    avg_page_chars = total_chars / max(len(pages_data), 1)
+    density_score = min(avg_page_chars / 150.0, 1.0)
+
+    # Composite weighted formula
+    quality = (char_validity * 30.0) + (lexical_ratio * 35.0) + (structural_score * 25.0) + (density_score * 10.0)
+    return round(min(max(quality, 0.0), 100.0), 1)
+
+
+def try_ocr_image(content: bytes) -> Optional[str]:
+    """
+    Attempts genuine Optical Character Recognition on image bytes.
+    1. Tries pytesseract library if available.
+    2. Tries standard tesseract executable via subprocess.
+    3. Never fabricates clinical text from metadata or image dimensions.
+    Returns recognized text string or None.
+    """
+    # Attempt 1: pytesseract Python binding
+    try:
+        import pytesseract
+        from PIL import Image
+        img = Image.open(io.BytesIO(content))
+        # Preprocess to grayscale for improved OCR clarity
+        if img.mode != "L":
+            img = img.convert("L")
+        text = pytesseract.image_to_string(img, lang="eng")
+        if text and len(text.strip()) >= 15:
+            return text.strip()
+    except Exception:
+        pass
+
+    # Attempt 2: Direct tesseract CLI execution
+    tesseract_cmd = shutil.which("tesseract")
+    if not tesseract_cmd:
+        candidates = [
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+            shutil.os.environ.get("TESSERACT_CMD")
+        ]
+        for c in candidates:
+            if c and shutil.os.path.exists(c):
+                tesseract_cmd = c
+                break
+
+    if not tesseract_cmd:
+        return None
+
+    try:
+        proc = subprocess.run(
+            [tesseract_cmd, "stdin", "stdout", "--oem", "1", "-l", "eng"],
+            input=content,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+            check=True
+        )
+        text = proc.stdout.decode("utf-8", errors="replace").strip()
+        return text if len(text) >= 15 else None
+    except Exception:
+        return None
 
 
 def extract_report_document(filename: str, content: bytes) -> Dict[str, Any]:
     """
     Main extraction pipeline:
-    Identifies document type, applies digital text extraction or optical OCR,
-    segments into clinical sections, and attaches page-linked passage anchors.
+    1. Identifies document type and validates presence of content.
+    2. Performs genuine digital text extraction (PDF / TXT) or OCR (Images).
+    3. Calculates an empirical confidence score from recognized characters and word structures.
+    4. Segments only genuine clinical sections and extracts anchored findings.
+    5. Never fabricates clinical findings if document is unreadable or empty.
     """
     filename_lower = filename.lower()
     raw_text = ""
     extraction_method = "Unknown"
-    confidence = 95.0
     extraction_errors: List[Dict[str, Any]] = []
     pages_data: List[Dict[str, Any]] = []
+
+    # Check for empty content
+    if not content or len(content.strip()) == 0:
+        return {
+            "filename": filename,
+            "extraction_method": "Empty Document Check",
+            "confidence": 0.0,
+            "raw_text": "",
+            "pages_count": 0,
+            "extraction_errors": [{
+                "page": 1,
+                "issue": "Uploaded document is empty (0 bytes). No text or scan data to analyze.",
+                "severity": "error"
+            }],
+            "sections": {},
+            "findings": [],
+            "processing_status": "failed",
+            "is_verified": False,
+            "disclaimer": "Verified indicates text review by user; not clinical validation."
+        }
 
     # 1. Digital PDF Extraction
     if filename_lower.endswith(".pdf"):
@@ -34,7 +166,10 @@ def extract_report_document(filename: str, content: bytes) -> Dict[str, Any]:
 
             for i, page in enumerate(pdf_reader.pages):
                 page_num = i + 1
-                page_text = page.extract_text() or ""
+                try:
+                    page_text = page.extract_text() or ""
+                except Exception:
+                    page_text = ""
                 clean_text = page_text.strip()
                 char_count = len(clean_text)
                 total_chars += char_count
@@ -45,83 +180,106 @@ def extract_report_document(filename: str, content: bytes) -> Dict[str, Any]:
                     "char_count": char_count
                 })
 
-            if total_chars > 80:
+            if total_chars >= 25:
                 # Genuine digital PDF with text layer
-                confidence = 99.1
                 page_blocks = []
                 for p in pages_data:
-                    page_blocks.append(f"--- [PAGE {p['page']}] ---\n{p['text']}")
+                    if p["text"]:
+                        page_blocks.append(f"--- [PAGE {p['page']}] ---\n{p['text']}")
                 raw_text = "\n\n".join(page_blocks)
             else:
-                # Scanned image-based PDF
-                extraction_method = "Scanned PDF (OCR Pass Applied)"
-                confidence = 88.5
-                extraction_errors.append({
-                    "page": 1,
-                    "issue": "Low text density detected in PDF stream; OCR rasterization fallback applied.",
-                    "severity": "notice"
-                })
-                raw_text = (
-                    "--- [PAGE 1 - SCANNED DOCUMENT OCR] ---\n"
-                    "EXAMINATION: DIAGNOSTIC RADIOLOGICAL IMAGING PROTOCOL\n"
-                    "TECHNIQUE: Volumetric acquisition processed through local OCR optical engine.\n"
-                    "FINDINGS: Visual boundaries captured. Targeted anatomy visualized without gross structural disruption.\n"
-                    "IMPRESSION: Scanned clinical record processed in sandbox. Correlation advised.\n"
-                    "RECOMMENDATIONS: Verify extracted text against original visual scan."
-                )
+                # Scanned image-based PDF without embedded text layer.
+                # Attempt OCR on embedded scanned page images across all pages.
+                extraction_method = "Scanned PDF (OCR Scan Extraction)"
+                scanned_ocr_blocks = []
+                scanned_ocr_success = False
+
+                for i, page in enumerate(pdf_reader.pages):
+                    page_num = i + 1
+                    page_ocr_parts = []
+                    # Extract images embedded on page
+                    if hasattr(page, "images") and page.images:
+                        for img_obj in page.images:
+                            try:
+                                img_bytes = img_obj.data
+                                ocr_result = try_ocr_image(img_bytes)
+                                if ocr_result and len(ocr_result.strip()) >= 15:
+                                    page_ocr_parts.append(ocr_result.strip())
+                            except Exception:
+                                pass
+                    if page_ocr_parts:
+                        page_combined = "\n".join(page_ocr_parts)
+                        scanned_ocr_blocks.append(f"--- [PAGE {page_num}] ---\n{page_combined}")
+                        for p in pages_data:
+                            if p["page"] == page_num:
+                                p["text"] = page_combined
+                                p["char_count"] = len(page_combined)
+                        scanned_ocr_success = True
+
+                if scanned_ocr_success and scanned_ocr_blocks:
+                    raw_text = "\n\n".join(scanned_ocr_blocks)
+                    extraction_method = "Scanned PDF (Optical OCR Engine)"
+                else:
+                    extraction_method = "Scanned PDF (OCR Engine Did Not Detect Text)"
+                    extraction_errors.append({
+                        "page": 1,
+                        "issue": "Scanned document detected without an embedded text layer. OCR was executed on embedded scan images but found no legible clinical report text. PathoGuard will never fabricate findings.",
+                        "severity": "error"
+                    })
+                    raw_text = ""
         except Exception as e:
-            extraction_method = "PDF Parser Recovery"
-            confidence = 78.0
+            extraction_method = "PDF Parser Error"
             extraction_errors.append({
                 "page": 1,
-                "issue": f"PDF parsing warning: {str(e)}",
-                "severity": "warning"
+                "issue": f"PDF parsing error: {str(e)}. File may be corrupted or password-protected.",
+                "severity": "error"
             })
-            raw_text = f"Notice: Error while reading digital PDF streams ({str(e)}). Please verify document."
+            raw_text = ""
 
     # 2. Image Optical Extraction (PNG, JPG, JPEG)
     elif filename_lower.endswith((".png", ".jpg", ".jpeg")):
-        extraction_method = "Optical Character Recognition (Pillow & Raster Analysis)"
+        extraction_method = "Optical Character Recognition (Image OCR)"
         try:
             from PIL import Image
             img = Image.open(io.BytesIO(content))
             width, height = img.size
             mode = img.mode
-            confidence = 93.4
 
             pages_data.append({
                 "page": 1,
                 "dimensions": f"{width}x{height}",
                 "mode": mode,
-                "char_count": 420
+                "char_count": 0
             })
 
-            # Check image clarity / resolution
-            if width < 600 or height < 600:
-                confidence = 84.0
+            if width < 400 or height < 400:
                 extraction_errors.append({
                     "page": 1,
-                    "issue": "Low resolution image detected (< 600px). Character recognition may have minor artifacts.",
+                    "issue": f"Low resolution image detected ({width}x{height} px). Text legibility may be compromised.",
                     "severity": "caution"
                 })
 
-            raw_text = (
-                f"--- [DIAGNOSTIC SCAN IMAGE: {filename} · {width}x{height} px · {mode}] ---\n\n"
-                f"METADATA: DE-IDENTIFIED CLINICAL SCAN · ACCESSION #{filename[:8].upper()}\n"
-                f"TECHNIQUE: High-resolution anatomical radiological acquisition protocol.\n"
-                f"FINDINGS: Targeted tissue volume evaluated. Tissue architecture appears contiguous with expected anatomical boundaries. No acute invasive architectural disruption recognized.\n"
-                f"IMPRESSION: Radiological evaluation complete within local sandbox. Clinical correlation advised with patient's reported symptoms.\n"
-                f"RECOMMENDATIONS: Recommend clinical correlation by attending physician."
-            )
+            # Attempt genuine OCR strictly on visual contents; never generate findings from metadata or dimensions
+            ocr_text = try_ocr_image(content)
+            if ocr_text and len(ocr_text.strip()) >= 15:
+                raw_text = ocr_text.strip()
+                pages_data[0]["char_count"] = len(raw_text)
+                pages_data[0]["text"] = raw_text
+            else:
+                extraction_errors.append({
+                    "page": 1,
+                    "issue": "Optical OCR engine did not recognize readable diagnostic report text in this image. PathoGuard does not infer clinical text from image dimensions or metadata.",
+                    "severity": "error"
+                })
+                raw_text = ""
         except Exception as e:
-            extraction_method = "Image Reader Recovery"
-            confidence = 70.0
+            extraction_method = "Image Parser Error"
             extraction_errors.append({
                 "page": 1,
-                "issue": f"Optical reading notice: {str(e)}",
+                "issue": f"Image format error: {str(e)}",
                 "severity": "error"
             })
-            raw_text = f"Notice: Optical parser encountered an unexpected image structure ({str(e)})."
+            raw_text = ""
 
     # 3. Plain Text Clinical Documents (.txt)
     elif filename_lower.endswith(".txt"):
@@ -132,15 +290,24 @@ def extract_report_document(filename: str, content: bytes) -> Dict[str, Any]:
             raw_text = content.decode("latin-1", errors="replace")
             extraction_errors.append({
                 "page": 1,
-                "issue": "Non-UTF8 character encoding encountered; fallback encoding applied.",
+                "issue": "Non-UTF8 character encoding encountered; fallback Latin-1 encoding applied.",
                 "severity": "notice"
             })
-        confidence = 99.8
-        pages_data.append({"page": 1, "char_count": len(raw_text)})
+        pages_data.append({"page": 1, "char_count": len(raw_text), "text": raw_text})
 
-    # Structure Recognition & Classification
-    sections = segment_report_structure(raw_text)
-    findings = extract_findings_with_passage_anchors(raw_text, sections, pages_data)
+    # 4. Compute empirical quality, segment structures, and extract anchored findings
+    has_text = bool(raw_text and len(raw_text.strip()) >= 15)
+
+    if has_text:
+        confidence = calculate_extraction_quality(raw_text, pages_data)
+        sections = segment_report_structure(raw_text)
+        findings = extract_findings_with_passage_anchors(raw_text, sections, pages_data)
+        processing_status = "needs_review"
+    else:
+        confidence = 0.0
+        sections = {}
+        findings = []
+        processing_status = "failed"
 
     return {
         "filename": filename,
@@ -151,7 +318,7 @@ def extract_report_document(filename: str, content: bytes) -> Dict[str, Any]:
         "extraction_errors": extraction_errors,
         "sections": sections,
         "findings": findings,
-        "processing_status": "needs_review",
+        "processing_status": processing_status,
         "is_verified": False,
         "disclaimer": "Verified indicates text review by user; not clinical validation."
     }
@@ -165,162 +332,235 @@ def segment_report_structure(text: str) -> Dict[str, str]:
     - findings: Anatomical findings & observations
     - impression: Clinical summary & impression
     - recommendations: Suggested next steps
-    - unclassified: Any text not belonging to standard headings (no invented content).
-    """
-    sections = {
-        "metadata": "De-identified diagnostic examination record.",
-        "technique": "Diagnostic clinical imaging protocol.",
-        "findings": "Anatomical structures evaluated within clinical parameters.",
-        "impression": "Evaluation completed. Clinical correlation recommended.",
-        "recommendations": "Follow-up with ordering clinician.",
-        "unclassified": ""
-    }
+    - unclassified: Any text not belonging to standard headings
 
-    text_upper = text.upper()
+    CRITICAL RULE:
+    Never inserts synthetic placeholder text. Only returns sections
+    that actually match extracted text patterns.
+    """
+    sections: Dict[str, str] = {}
+    if not text or not text.strip():
+        return sections
 
     # Metadata extraction (accession, indication, study date)
-    meta_match = re.search(r"(?:METADATA|CLINICAL HISTORY|INDICATION):?(.*?)(?=TECHNIQUE|EXAMINATION|FINDINGS|$)", text, re.IGNORECASE | re.DOTALL)
+    meta_match = re.search(
+        r"(?:METADATA|CLINICAL HISTORY|INDICATION):?\s*(.*?)(?=(?:TECHNIQUE|EXAMINATION|PROTOCOL|FINDINGS|IMPRESSION|$))",
+        text, re.IGNORECASE | re.DOTALL
+    )
     if meta_match and meta_match.group(1).strip():
         sections["metadata"] = meta_match.group(1).strip()
 
     # Technique / Examination
-    tech_match = re.search(r"(?:TECHNIQUE|EXAMINATION|PROTOCOL):?(.*?)(?=FINDINGS|IMPRESSION|$)", text, re.IGNORECASE | re.DOTALL)
+    tech_match = re.search(
+        r"(?:TECHNIQUE|EXAMINATION|PROTOCOL):?\s*(.*?)(?=(?:FINDINGS|OBSERVATIONS|IMPRESSION|CONCLUSION|$))",
+        text, re.IGNORECASE | re.DOTALL
+    )
     if tech_match and tech_match.group(1).strip():
         sections["technique"] = tech_match.group(1).strip()
 
     # Findings
-    findings_match = re.search(r"(?:FINDINGS|OBSERVATIONS):?(.*?)(?=IMPRESSION|CONCLUSION|RECOMMENDATION|$)", text, re.IGNORECASE | re.DOTALL)
+    findings_match = re.search(
+        r"(?:FINDINGS|OBSERVATIONS):?\s*(.*?)(?=(?:IMPRESSION|CONCLUSION|RECOMMENDATION|RECOMMENDATIONS|$))",
+        text, re.IGNORECASE | re.DOTALL
+    )
     if findings_match and findings_match.group(1).strip():
         sections["findings"] = findings_match.group(1).strip()
 
     # Impression / Conclusion
-    imp_match = re.search(r"(?:IMPRESSION|CONCLUSION|SUMMARY):?(.*?)(?=RECOMMENDATION|$)", text, re.IGNORECASE | re.DOTALL)
+    imp_match = re.search(
+        r"(?:IMPRESSION|CONCLUSION|SUMMARY):?\s*(.*?)(?=(?:RECOMMENDATION|RECOMMENDATIONS|$))",
+        text, re.IGNORECASE | re.DOTALL
+    )
     if imp_match and imp_match.group(1).strip():
         sections["impression"] = imp_match.group(1).strip()
 
     # Recommendations
-    rec_match = re.search(r"(?:RECOMMENDATIONS?|FOLLOW-UP):?(.*?)$", text, re.IGNORECASE | re.DOTALL)
+    rec_match = re.search(
+        r"(?:RECOMMENDATIONS?|FOLLOW-UP):?\s*(.*?)$",
+        text, re.IGNORECASE | re.DOTALL
+    )
     if rec_match and rec_match.group(1).strip():
         sections["recommendations"] = rec_match.group(1).strip()
 
-    # Check for unclassified paragraphs
-    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
-    unclassified_paras = []
-    known_headers = ["TECHNIQUE", "EXAMINATION", "FINDINGS", "OBSERVATION", "IMPRESSION", "CONCLUSION", "RECOMMENDATION", "METADATA", "CLINICAL HISTORY"]
-    for para in paragraphs:
-        first_line = para.split("\n")[0].upper()
-        if not any(header in first_line for header in known_headers) and not first_line.startswith("---"):
-            if len(para) > 30 and para not in sections["metadata"]:
-                unclassified_paras.append(para)
-
-    if unclassified_paras:
-        sections["unclassified"] = "\n\n".join(unclassified_paras[:3])
+    # Unclassified text (if no headings matched or substantial unparsed text remains)
+    if not sections and text.strip():
+        sections["unclassified"] = text.strip()[:1000]
 
     return sections
 
 
-def extract_findings_with_passage_anchors(raw_text: str, sections: Dict[str, str], pages_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def extract_findings_with_passage_anchors(
+    raw_text: str,
+    sections: Dict[str, str],
+    pages_data: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
     """
-    Extracts individual clinical findings and creates verbatim passage anchors
-    with uncertainty flags and page references.
+    Extracts individual clinical findings strictly from actual parsed text.
+    Attaches verified page numbers and passage anchors.
+    Never invents findings not present in the source.
     """
-    findings = []
-    raw_lower = raw_text.lower()
-    page_ref = "Page 1" if len(pages_data) <= 1 else f"Page 1-{len(pages_data)}"
+    findings: List[Dict[str, Any]] = []
+    if not raw_text or not raw_text.strip():
+        return findings
 
-    # Uncertainty detection dictionary
-    uncertainty_keywords = ["indeterminate", "cannot exclude", "subcentimeter", "unclear", "equivocal", "recommend correlation", "prior imaging unavailable"]
+    def find_page_for_text(snippet: str) -> int:
+        if not snippet or len(pages_data) <= 1:
+            return 1
+        probe = snippet[:40].lower()
+        for p in pages_data:
+            if probe in p.get("text", "").lower():
+                return p.get("page", 1)
+        return 1
 
-    # 1. Technique & Protocol Anchor
-    findings.append({
-        "id": "p0",
-        "section": "technique",
-        "title": "Imaging Modality & Acquisition Protocol",
-        "category": "significant",
-        "typeLabel": "Examination Protocol",
-        "body": sections["technique"][:240] + ("..." if len(sections["technique"]) > 240 else ""),
-        "uncertainty": False,
-        "needsVerification": True,
-        "verified": False,
-        "sourceRef": f"Technique · {page_ref} · § 1"
-    })
+    uncertainty_keywords = [
+        "indeterminate", "cannot exclude", "cannot rule out", "subcentimeter",
+        "unclear", "equivocal", "recommend correlation", "prior imaging unavailable",
+        "uncertain", "poorly visualized", "obscured"
+    ]
 
-    # 2. Main Anatomical Finding Anchor
-    finding_body = sections["findings"][:260] + ("..." if len(sections["findings"]) > 260 else "")
-    findings.append({
-        "id": "p1",
-        "section": "findings",
-        "title": "Primary Anatomical Observation",
-        "category": "significant",
-        "typeLabel": "Anatomical Finding",
-        "body": finding_body,
-        "uncertainty": False,
-        "needsVerification": True,
-        "verified": False,
-        "sourceRef": f"Findings · {page_ref} · § 1"
-    })
+    anchor_idx = 0
 
-    # 3. Uncertainty & Baseline Verification Anchor
-    is_uncertain = any(term in raw_lower for term in uncertainty_keywords) or ("prior" not in raw_lower and "baseline" not in raw_lower)
-    findings.append({
-        "id": "p2",
-        "section": "findings",
-        "title": "Baseline Stability & Temporal Comparison",
-        "category": "uncertainty" if is_uncertain else "significant",
-        "typeLabel": "Needs Patient Verification",
-        "body": "Absence of prior baseline imaging prevents longitudinal growth-rate comparison. Requires user verification of prior imaging history.",
-        "uncertainty": True,
-        "needsVerification": True,
-        "verified": False,
-        "sourceRef": f"Findings · {page_ref} · § 2"
-    })
-
-    # 4. Impression Anchor
-    findings.append({
-        "id": "p3",
-        "section": "impression",
-        "title": "Radiological Diagnostic Impression",
-        "category": "significant",
-        "typeLabel": "Radiologist Impression",
-        "body": sections["impression"][:240] + ("..." if len(sections["impression"]) > 240 else ""),
-        "uncertainty": False,
-        "needsVerification": True,
-        "verified": False,
-        "sourceRef": f"Impression · {page_ref} · § 1"
-    })
-
-    # 5. Recommendation Anchor
-    findings.append({
-        "id": "p4",
-        "section": "recommendations",
-        "title": "Clinical Recommendation & Next Steps",
-        "category": "significant",
-        "typeLabel": "Clinical Follow-Up",
-        "body": sections["recommendations"][:240] + ("..." if len(sections["recommendations"]) > 240 else ""),
-        "uncertainty": False,
-        "needsVerification": True,
-        "verified": False,
-        "sourceRef": f"Recommendations · {page_ref} · § 1"
-    })
-
-    # 6. Unclassified Context Anchor (if present)
-    if sections.get("unclassified"):
+    # 1. Technique & Protocol Anchor (if present in document)
+    if "technique" in sections and sections["technique"].strip():
+        tech_text = sections["technique"].strip()
+        page_num = find_page_for_text(tech_text)
         findings.append({
-            "id": "p5",
+            "id": f"p{anchor_idx}",
+            "section": "technique",
+            "title": "Imaging Modality & Acquisition Protocol",
+            "category": "significant",
+            "typeLabel": "Examination Protocol",
+            "body": tech_text[:300] + ("..." if len(tech_text) > 300 else ""),
+            "uncertainty": False,
+            "needsVerification": True,
+            "verified": False,
+            "page": page_num,
+            "sourceRef": f"Technique · Page {page_num} · § 1"
+        })
+        anchor_idx += 1
+
+    # 2. Main Anatomical Findings (if present in document)
+    if "findings" in sections and sections["findings"].strip():
+        f_text = sections["findings"].strip()
+        sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', f_text) if len(s.strip()) > 15]
+
+        if sentences:
+            # Primary finding
+            primary_snippet = sentences[0]
+            p_num = find_page_for_text(primary_snippet)
+            is_unc = any(k in primary_snippet.lower() for k in uncertainty_keywords)
+            findings.append({
+                "id": f"p{anchor_idx}",
+                "section": "findings",
+                "title": "Primary Anatomical Observation",
+                "category": "uncertainty" if is_unc else "significant",
+                "typeLabel": "Anatomical Finding",
+                "body": primary_snippet[:300] + ("..." if len(primary_snippet) > 300 else ""),
+                "uncertainty": is_unc,
+                "needsVerification": True,
+                "verified": False,
+                "page": p_num,
+                "sourceRef": f"Findings · Page {p_num} · § 1"
+            })
+            anchor_idx += 1
+
+            # Secondary finding (if multiple findings exist)
+            if len(sentences) > 1:
+                secondary_snippet = sentences[1]
+                p_num2 = find_page_for_text(secondary_snippet)
+                is_unc2 = any(k in secondary_snippet.lower() for k in uncertainty_keywords)
+                findings.append({
+                    "id": f"p{anchor_idx}",
+                    "section": "findings",
+                    "title": "Secondary Anatomical Finding",
+                    "category": "uncertainty" if is_unc2 else "significant",
+                    "typeLabel": "Anatomical Finding",
+                    "body": secondary_snippet[:300] + ("..." if len(secondary_snippet) > 300 else ""),
+                    "uncertainty": is_unc2,
+                    "needsVerification": True,
+                    "verified": False,
+                    "page": p_num2,
+                    "sourceRef": f"Findings · Page {p_num2} · § 2"
+                })
+                anchor_idx += 1
+        else:
+            p_num = find_page_for_text(f_text)
+            is_unc = any(k in f_text.lower() for k in uncertainty_keywords)
+            findings.append({
+                "id": f"p{anchor_idx}",
+                "section": "findings",
+                "title": "Anatomical Observation",
+                "category": "uncertainty" if is_unc else "significant",
+                "typeLabel": "Anatomical Finding",
+                "body": f_text[:300] + ("..." if len(f_text) > 300 else ""),
+                "uncertainty": is_unc,
+                "needsVerification": True,
+                "verified": False,
+                "page": p_num,
+                "sourceRef": f"Findings · Page {p_num} · § 1"
+            })
+            anchor_idx += 1
+
+    # 3. Impression Anchor (if present in document)
+    if "impression" in sections and sections["impression"].strip():
+        imp_text = sections["impression"].strip()
+        p_num = find_page_for_text(imp_text)
+        is_unc = any(k in imp_text.lower() for k in uncertainty_keywords)
+        findings.append({
+            "id": f"p{anchor_idx}",
+            "section": "impression",
+            "title": "Radiological Diagnostic Impression",
+            "category": "uncertainty" if is_unc else "significant",
+            "typeLabel": "Radiologist Impression",
+            "body": imp_text[:300] + ("..." if len(imp_text) > 300 else ""),
+            "uncertainty": is_unc,
+            "needsVerification": True,
+            "verified": False,
+            "page": p_num,
+            "sourceRef": f"Impression · Page {p_num} · § 1"
+        })
+        anchor_idx += 1
+
+    # 4. Recommendations Anchor (if present in document)
+    if "recommendations" in sections and sections["recommendations"].strip():
+        rec_text = sections["recommendations"].strip()
+        p_num = find_page_for_text(rec_text)
+        findings.append({
+            "id": f"p{anchor_idx}",
+            "section": "recommendations",
+            "title": "Clinical Recommendation & Next Steps",
+            "category": "significant",
+            "typeLabel": "Clinical Follow-Up",
+            "body": rec_text[:300] + ("..." if len(rec_text) > 300 else ""),
+            "uncertainty": False,
+            "needsVerification": True,
+            "verified": False,
+            "page": p_num,
+            "sourceRef": f"Recommendations · Page {p_num} · § 1"
+        })
+        anchor_idx += 1
+
+    # 5. Unclassified Text Anchor (if present in document)
+    if "unclassified" in sections and sections["unclassified"].strip():
+        unc_text = sections["unclassified"].strip()
+        p_num = find_page_for_text(unc_text)
+        findings.append({
+            "id": f"p{anchor_idx}",
             "section": "unclassified",
-            "title": "Unclassified Clinical Passage",
-            "category": "unclassified",
-            "typeLabel": "Unclassified Text",
-            "body": sections["unclassified"][:200] + ("..." if len(sections["unclassified"]) > 200 else ""),
+            "title": "Unclassified Report Excerpt",
+            "category": "uncertainty",
+            "typeLabel": "Unclassified Passage",
+            "body": unc_text[:240] + ("..." if len(unc_text) > 240 else ""),
             "uncertainty": True,
             "needsVerification": True,
             "verified": False,
-            "sourceRef": f"General · {page_ref} · § 3"
+            "page": p_num,
+            "sourceRef": f"General · Page {p_num} · § 1"
         })
+        anchor_idx += 1
 
     return findings
 
 
 # Backward compatibility alias
 extract_text_from_file = extract_report_document
-

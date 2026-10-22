@@ -1,17 +1,16 @@
 """
-Phase 14 Test Suite — Complete End-to-End System Verification
-Tests the entire clinical user journey:
-Symptoms -> Report Upload -> Extraction -> User Verification -> Adaptive Evidence Assessment ->
-Database Persistence -> History Retrieval -> Longitudinal Comparison -> Abstention -> Security.
+Phase 14 Test Suite — Clinical Safety, Integrity & End-to-End Verification
+Validates the complete diagnostic assistance workflow from report upload through
+user verification, symptom assessment intake, grounded explanation, longitudinal comparison,
+cryptographic session authentication, and cross-user data isolation.
 """
 
 import sys
+import io
 import json
 import urllib.request
 import urllib.error
-import os
 import uuid
-import datetime
 
 # Force UTF-8 stdout on Windows
 if sys.stdout.encoding != 'utf-8':
@@ -73,7 +72,7 @@ def delete_json(endpoint, headers=None):
         return e.code, json.loads(e.read().decode())
 
 
-def post_multipart(endpoint, filename, content_bytes, content_type="application/pdf"):
+def post_multipart(endpoint, filename, content_bytes, content_type="application/pdf", headers=None):
     url = f"{BASE_URL}{endpoint}"
     boundary = f"----WebKitFormBoundary{uuid.uuid4().hex[:16]}"
     body = bytearray()
@@ -83,14 +82,14 @@ def post_multipart(endpoint, filename, content_bytes, content_type="application/
     body.extend(content_bytes)
     body.extend(f"\r\n--{boundary}--\r\n".encode())
 
-    req = urllib.request.Request(
-        url,
-        data=bytes(body),
-        headers={
-            "Content-Type": f"multipart/form-data; boundary={boundary}",
-            "User-Agent": "PathoGuard-Phase14-E2E"
-        }
-    )
+    req_headers = {
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+        "User-Agent": "PathoGuard-Phase14-E2E"
+    }
+    if headers:
+        req_headers.update(headers)
+
+    req = urllib.request.Request(url, data=bytes(body), headers=req_headers)
     try:
         with urllib.request.urlopen(req) as resp:
             return resp.status, json.loads(resp.read().decode())
@@ -103,6 +102,21 @@ def run_phase14_tests():
 
     test_user_a = f"patient_{uuid.uuid4().hex[:6]}"
     test_user_b = f"patient_{uuid.uuid4().hex[:6]}"
+
+    # 0. Acquire Authenticated Session Tokens for Isolated Users
+    _, sess_a = post_json("/api/v1/auth/session", {"user_id": test_user_a})
+    token_a = sess_a.get("token")
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+
+    _, sess_b = post_json("/api/v1/auth/session", {"user_id": test_user_b})
+    token_b = sess_b.get("token")
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    log_test(
+        "Cryptographic Session Authentication",
+        bool(token_a) and bool(token_b),
+        f"User A: {test_user_a}, User B: {test_user_b}"
+    )
 
     # -------------------------------------------------------------
     # 1. System Readiness & Health Probe
@@ -134,7 +148,7 @@ def run_phase14_tests():
         b"0000000305 00000 n \ntrailer <</Size 6 /Root 1 0 R>>\nstartxref\n705\n%%EOF\n"
     )
 
-    status, upload_res = post_multipart("/api/v1/reports", "E2E_Thoracic_CT.pdf", synthetic_pdf_bytes)
+    status, upload_res = post_multipart("/api/v1/reports", "E2E_Thoracic_CT.pdf", synthetic_pdf_bytes, headers=headers_a)
     report_id = upload_res.get("report_id")
     log_test(
         "Workflow Step 1: Scan Report Upload & Segmentation",
@@ -151,7 +165,7 @@ def run_phase14_tests():
         "verified_findings": extracted_findings,
         "notes": "E2E Test: User confirmed all segment boundaries match source document."
     }
-    status, verify_res = post_json(f"/api/v1/reports/{report_id}/verify", verified_payload)
+    status, verify_res = post_json(f"/api/v1/reports/{report_id}/verify", verified_payload, headers=headers_a)
     log_test(
         "Workflow Step 2: Patient Verification & Non-Clinical Disclaimer",
         status == 200 and verify_res.get("processing_status") == "verified",
@@ -171,7 +185,7 @@ def run_phase14_tests():
         "patient_note": "Noticed cough after a minor cold last month.",
         "associated_report_id": report_id
     }
-    status, asm_res = post_json(f"/api/v1/assessments?user_id={test_user_a}", assessment_payload)
+    status, asm_res = post_json("/api/v1/assessments", assessment_payload, headers=headers_a)
     asm_id = asm_res.get("assessment_id")
     log_test(
         "Workflow Step 3: Adaptive Evidence Assessment Creation",
@@ -182,7 +196,7 @@ def run_phase14_tests():
     # -------------------------------------------------------------
     # 5. Complete Workflow Step 4: AI Report Understanding & Explanations
     # -------------------------------------------------------------
-    status, explain_res = get_json(f"/api/v1/reports/{report_id}/explain")
+    status, explain_res = get_json(f"/api/v1/reports/{report_id}/explain", headers=headers_a)
     log_test(
         "Workflow Step 4: Grounded Patient Translation & Terminology Explanation",
         status == 200 and len(explain_res.get("explained_sections", [])) >= 3,
@@ -193,7 +207,7 @@ def run_phase14_tests():
     # 6. Complete Workflow Step 5: Grounded Evidence Search
     # -------------------------------------------------------------
     search_payload = {"query": "nodule subpleural"}
-    status, search_res = post_json(f"/api/v1/reports/{report_id}/search-evidence", search_payload)
+    status, search_res = post_json(f"/api/v1/reports/{report_id}/search-evidence", search_payload, headers=headers_a)
     log_test(
         "Workflow Step 5: Grounded Passage Retrieval",
         status == 200 and search_res.get("matches_count", 0) >= 1,
@@ -203,7 +217,7 @@ def run_phase14_tests():
     # -------------------------------------------------------------
     # 7. Complete Workflow Step 6: History Persistence & ID Retrieval
     # -------------------------------------------------------------
-    status, stored_asm = get_json(f"/api/v1/assessments/{asm_id}?user_id={test_user_a}")
+    status, stored_asm = get_json(f"/api/v1/assessments/{asm_id}", headers=headers_a)
     log_test(
         "Workflow Step 6: Persistent History Retrieval",
         status == 200 and stored_asm.get("assessment_id") == asm_id,
@@ -213,7 +227,6 @@ def run_phase14_tests():
     # -------------------------------------------------------------
     # 8. Complete Workflow Step 7: Longitudinal Assessment Comparison
     # -------------------------------------------------------------
-    # Seed baseline assessment for comparison
     baseline_payload = {
         "primary_symptoms": ["Intermittent cough"],
         "onset": "1 week",
@@ -221,10 +234,10 @@ def run_phase14_tests():
         "frequency": "Occasional",
         "age_bracket": "45-54"
     }
-    _, base_asm_res = post_json(f"/api/v1/assessments?user_id={test_user_a}", baseline_payload)
+    _, base_asm_res = post_json("/api/v1/assessments", baseline_payload, headers=headers_a)
     base_id = base_asm_res.get("assessment_id")
 
-    status, comp_res = get_json(f"/api/v1/assessments/compare?id1={base_id}&id2={asm_id}&user_id={test_user_a}")
+    status, comp_res = get_json(f"/api/v1/assessments/compare?id1={base_id}&id2={asm_id}", headers=headers_a)
     log_test(
         "Workflow Step 7: Longitudinal Comparison & Clinical Disclaimer",
         status == 200 and "clinical_progression_notice" in comp_res and "wording differences" in comp_res.get("clinical_progression_notice", "").lower(),
@@ -234,7 +247,7 @@ def run_phase14_tests():
     # -------------------------------------------------------------
     # 9. Duplicate Submission Prevention (Idempotency)
     # -------------------------------------------------------------
-    status, dup_res = post_json(f"/api/v1/assessments?user_id={test_user_a}", assessment_payload)
+    status, dup_res = post_json("/api/v1/assessments", assessment_payload, headers=headers_a)
     log_test(
         "Duplicate Submission Prevention (Idempotency within 15s)",
         status == 200 and dup_res.get("assessment_id") == asm_id,
@@ -244,31 +257,41 @@ def run_phase14_tests():
     # -------------------------------------------------------------
     # 10. Cross-User Data Isolation (Security & Privacy)
     # -------------------------------------------------------------
-    status_unauth, _ = get_json(f"/api/v1/assessments/{asm_id}?user_id={test_user_b}")
+    # User B attempts to access User A's assessment -> 404
+    status_unauth, _ = get_json(f"/api/v1/assessments/{asm_id}", headers=headers_b)
     log_test(
         "Cross-User Data Isolation: Unauthorized Access Blocked (404)",
         status_unauth == 404,
         f"User {test_user_b} blocked from accessing records belonging to {test_user_a}"
     )
 
-    status_del_unauth, _ = delete_json(f"/api/v1/assessments/{asm_id}?user_id={test_user_b}")
+    # User B attempts to delete User A's assessment -> 404
+    status_del_unauth, _ = delete_json(f"/api/v1/assessments/{asm_id}", headers=headers_b)
     log_test(
         "Cross-User Data Isolation: Unauthorized Deletion Blocked (404)",
         status_del_unauth == 404,
         f"User {test_user_b} blocked from deleting records belonging to {test_user_a}"
     )
 
+    # User B attempts to access User A's report -> 404
+    status_rep_unauth, _ = get_json(f"/api/v1/reports/{report_id}", headers=headers_b)
+    log_test(
+        "Cross-User Data Isolation: Unauthorized Report Access Blocked (404)",
+        status_rep_unauth == 404,
+        f"User {test_user_b} blocked from accessing report belonging to {test_user_a}"
+    )
+
     # -------------------------------------------------------------
     # 11. Corrupted File & Unsupported Format Rejection
     # -------------------------------------------------------------
-    status_corrupt, _ = post_multipart("/api/v1/reports", "malicious_script.bat", b"@echo off\r\nrmdir /s /q C:\\", "text/plain")
+    status_corrupt, _ = post_multipart("/api/v1/reports", "malicious_script.bat", b"@echo off\r\nrmdir /s /q C:\\", "text/plain", headers=headers_a)
     log_test(
         "Security Guardrail: Unsupported File Format Rejection (.bat -> 400)",
         status_corrupt == 400,
         "Blocked dangerous file extension"
     )
 
-    status_empty, _ = post_multipart("/api/v1/reports", "empty_corrupt.pdf", b"", "application/pdf")
+    status_empty, _ = post_multipart("/api/v1/reports", "empty_corrupt.pdf", b"", "application/pdf", headers=headers_a)
     log_test(
         "Security Guardrail: Corrupted/Empty Document Handling",
         status_empty in [200, 400],
@@ -286,7 +309,7 @@ def run_phase14_tests():
         f"Category: {abs_res.get('abstention_category')}, Safely directed to physician biopsy"
     )
 
-    print("\n================ ALL PHASE 14 END-TO-END TESTS PASSED (12/12) ================\n")
+    print(f"\n================ ALL PHASE 14 END-TO-END TESTS PASSED (14/14) ================\n")
 
 
 if __name__ == "__main__":
